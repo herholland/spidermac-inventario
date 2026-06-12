@@ -10,345 +10,307 @@
 <meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+<link rel="icon" type="image/png" href="icons/icon-192.png">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 <title>SpiderMac Inventario</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#efefec;
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#efefec;
   --text:#1a1a18;--text2:#6b6b67;--text3:#a0a09a;
-  --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.20);
+  --border:rgba(0,0,0,.10);--border2:rgba(0,0,0,.20);
   --radius:8px;--radius-lg:12px;
-  --green:#1D9E75;--green-light:#E1F5EE;--green-dark:#0F6E56;
-  --amber:#BA7517;--amber-light:#FAEEDA;
-  --red:#A32D2D;--red-light:#FCEBEB;
-  --blue:#185FA5;--blue-light:#E6F1FB;
-  --sidebar:230px;
+  --green:#1D9E75;--gl:#E1F5EE;--gd:#0F6E56;
+  --amber:#BA7517;--al:#FAEEDA;
+  --red:#A32D2D;--rl:#FCEBEB;
+  --sidebar:228px;
+  --sb:env(safe-area-inset-bottom,0px);
+  --st:env(safe-area-inset-top,0px);
 }
-@media(prefers-color-scheme:dark){
-  :root{
-    --bg:#1e1e1c;--bg2:#2a2a28;--bg3:#1a1a18;
-    --text:#f0efe8;--text2:#a0a09a;--text3:#6b6b67;
-    --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.18);
-    --green-light:#04342C;--amber-light:#412402;--red-light:#501313;--blue-light:#042C53;
-  }
-}
-html,body{height:100%;overflow:hidden}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;background:var(--bg3);color:var(--text)}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1e1e1c;--bg2:#2a2a28;--bg3:#141412;
+  --text:#f0efe8;--text2:#a0a09a;--text3:#6b6b67;
+  --border:rgba(255,255,255,.09);--border2:rgba(255,255,255,.18);
+  --gl:#04342C;--al:#412402;--rl:#501313;
+}}
+html{height:100%;height:-webkit-fill-available}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;background:var(--bg3);color:var(--text);height:100%;height:-webkit-fill-available;overflow:hidden;position:fixed;width:100%}
 
-/* LAYOUT */
-.layout{display:flex;height:100vh;height:100dvh}
+/* ─── SPLASH ──────────────────────────────────────── */
+#splash{position:fixed;inset:0;z-index:9999;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;transition:opacity .45s ease;padding-bottom:calc(80px + var(--sb))}
+#splash.hide{opacity:0;pointer-events:none}
+.splash-logo{width:76px;height:76px;background:var(--green);border-radius:20px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;box-shadow:0 8px 30px rgba(29,158,117,.4)}
+.splash-logo i{font-size:38px;color:#fff}
+.splash-title{font-size:24px;font-weight:700;color:var(--text);margin-bottom:3px;letter-spacing:-.3px}
+.splash-sub{font-size:13px;color:var(--text3);margin-bottom:28px}
+.splash-box{width:min(360px,92vw)}
+.splash-search-wrap{position:relative;margin-bottom:10px}
+.splash-search-wrap i{position:absolute;left:13px;top:50%;transform:translateY(-50%);font-size:18px;color:var(--text3);pointer-events:none}
+#splash-search{width:100%;padding:14px 16px 14px 42px;font-size:15px;border-radius:14px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;box-shadow:0 2px 20px rgba(0,0,0,.08);-webkit-appearance:none}
+#splash-search:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.15)}
+.splash-suggestions{background:var(--bg);border:0.5px solid var(--border2);border-radius:12px;box-shadow:0 4px 20px rgba(0,0,0,.12);overflow:hidden;margin-top:0}
+.sugg-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:10px 14px 4px}
+.sugg-item{padding:10px 14px;font-size:13px;cursor:pointer;color:var(--text);display:flex;align-items:center;gap:8px}
+.sugg-item:hover,.sugg-item:active{background:var(--bg2)}
+.sugg-item::before{content:"\e527";font-family:"tabler-icons";font-size:14px;color:var(--text3);flex-shrink:0}
+.splash-status{margin-top:14px;font-size:12px;color:var(--text3);display:flex;align-items:center;gap:7px;justify-content:center}
+.splash-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);animation:pulse 1.2s infinite;flex-shrink:0}
+.splash-dot.ok{background:var(--green);animation:none}
+.splash-dot.err{background:var(--red);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.2}}
+.splash-enter{margin-top:12px;width:100%;padding:12px;border-radius:12px;background:var(--green);color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;-webkit-appearance:none}
+.splash-enter:active{opacity:.85}
 
-/* SIDEBAR */
+/* ─── LAYOUT ──────────────────────────────────────── */
+.layout{display:flex;height:100%;height:-webkit-fill-available}
+
+/* ─── SIDEBAR ─────────────────────────────────────── */
 .sidebar{width:var(--sidebar);background:var(--bg);border-right:0.5px solid var(--border2);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
-.sidebar-logo{padding:1rem;border-bottom:0.5px solid var(--border);flex-shrink:0}
-.sidebar-logo h2{font-size:15px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.sidebar-logo{padding:calc(.9rem + var(--st)) 1rem .9rem;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.sidebar-logo h2{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
 .sidebar-logo h2 i{color:var(--green);font-size:18px}
 .sidebar-logo p{font-size:11px;color:var(--text3);margin-top:2px}
-.sidebar-scroll{flex:1;overflow-y:auto;padding-bottom:1rem}
+.sidebar-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:1rem}
 .nav-section{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:10px 1rem 3px;font-weight:600}
-.nav-item{display:flex;align-items:center;gap:8px;padding:7px 1rem;font-size:13px;color:var(--text2);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .1s,color .1s}
-.nav-item:hover{background:var(--bg2);color:var(--text)}
-.nav-item.active{background:var(--green-light);color:var(--green-dark);font-weight:500}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 1rem;font-size:13px;color:var(--text2);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .1s,color .1s;-webkit-appearance:none}
+.nav-item:hover,.nav-item:active{background:var(--bg2);color:var(--text)}
+.nav-item.active{background:var(--gl);color:var(--gd);font-weight:500}
 .nav-item i{font-size:15px;flex-shrink:0;width:18px}
 .nav-count{margin-left:auto;font-size:11px;background:var(--bg2);padding:1px 7px;border-radius:20px;color:var(--text3);min-width:22px;text-align:center}
 .nav-item.active .nav-count{background:rgba(29,158,117,.18);color:var(--green)}
+.sync-bar{padding:8px 1rem;padding-bottom:calc(8px + var(--sb));border-top:0.5px solid var(--border);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;flex-shrink:0}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3);flex-shrink:0}
+.sync-dot.ok{background:var(--green)}.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite}.sync-dot.err{background:var(--red)}
 
-/* SYNC STATUS */
-.sync-bar{padding:8px 1rem;border-top:0.5px solid var(--border);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;flex-shrink:0}
-.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
-.sync-dot.ok{background:var(--green)}
-.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite}
-.sync-dot.err{background:var(--red)}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-
-/* MAIN */
+/* ─── MAIN ────────────────────────────────────────── */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-.topbar{padding:.85rem 1.25rem;display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-bottom:0.5px solid var(--border);flex-shrink:0}
-.topbar h1{font-size:17px;font-weight:500;color:var(--text)}
-.topbar-right{display:flex;align-items:center;gap:8px}
-.content{flex:1;overflow-y:auto;padding:1.25rem}
+.topbar{padding:.8rem 1.25rem;padding-top:calc(.8rem + var(--st));display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-bottom:0.5px solid var(--border);flex-shrink:0;gap:8px}
+.topbar h1{font-size:15px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.topbar-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:1rem}
 
-/* SPLASH / HOME PAGE */
-.splash{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 60px);padding:2rem}
-.splash-logo{font-size:48px;color:var(--green);margin-bottom:1rem}
-.splash-title{font-size:28px;font-weight:600;color:var(--text);margin-bottom:4px}
-.splash-sub{font-size:14px;color:var(--text3);margin-bottom:2rem}
-.splash-search{width:100%;max-width:520px;display:flex;gap:8px;margin-bottom:1.5rem}
-.splash-search input{flex:1;padding:14px 18px;font-size:16px;border-radius:12px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text);outline:none;font-family:inherit;transition:border-color .15s}
-.splash-search input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12)}
-.splash-search button{padding:14px 20px;border-radius:12px;border:none;background:var(--green);color:#fff;font-size:15px;cursor:pointer;font-family:inherit;font-weight:500;transition:background .1s}
-.splash-search button:hover{background:var(--green-dark)}
-.splash-cats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:600px}
-.splash-cat{padding:7px 14px;border-radius:20px;border:0.5px solid var(--border2);background:var(--bg);color:var(--text2);font-size:12px;cursor:pointer;transition:all .15s;font-family:inherit}
-.splash-cat:hover{background:var(--green-light);color:var(--green-dark);border-color:var(--green)}
-.splash-loading{font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;margin-top:12px}
-.splash-loading .mini-spinner{width:14px;height:14px;border:2px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
-
-/* STATS */
+/* ─── STATS ───────────────────────────────────────── */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
-.stat{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px}
-.stat-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
-.stat-value{font-size:22px;font-weight:500;color:var(--text)}
+.stat{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:9px 11px}
+.stat-label{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.stat-value{font-size:20px;font-weight:600;color:var(--text)}
 .stat-value.g{color:var(--green)}.stat-value.a{color:var(--amber)}.stat-value.r{color:var(--red)}
 
-/* PANEL */
-.panel{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem}
-.panel-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px}
+/* ─── PANEL ───────────────────────────────────────── */
+.panel{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem}
 
-/* FORM */
-.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px}
-.form-grid-2col{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
-.form-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem}
-.fgroup{display:flex;flex-direction:column;gap:4px}
-.fgroup label{font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
-.fgroup input,.fgroup select,.fgroup textarea{width:100%;padding:7px 9px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;transition:border-color .15s;font-family:inherit}
-.fgroup textarea{resize:vertical;min-height:60px}
-.fgroup input:focus,.fgroup select:focus,.fgroup textarea:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12)}
-
-/* COLOR PICKER */
-.color-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
-.color-swatch{width:26px;height:26px;border-radius:6px;cursor:pointer;border:2px solid transparent;transition:transform .1s,border-color .1s}
-.color-swatch:hover{transform:scale(1.15)}
-.color-swatch.selected{border-color:var(--text);transform:scale(1.1)}
-
-/* BUTTONS */
-.btn-row{display:flex;gap:8px;flex-wrap:wrap}
-.btn{padding:7px 14px;border-radius:var(--radius);border:0.5px solid var(--border2);font-size:13px;font-weight:500;cursor:pointer;background:var(--bg);color:var(--text);display:inline-flex;align-items:center;gap:6px;transition:background .1s,transform .1s;font-family:inherit;white-space:nowrap}
-.btn:hover{background:var(--bg2)}
-.btn:active{transform:scale(0.97)}
-.btn.primary{background:var(--green);color:#fff;border-color:var(--green-dark)}
-.btn.primary:hover{background:var(--green-dark)}
-.btn.danger{background:var(--red-light);color:var(--red);border-color:rgba(163,45,45,.25)}
-.btn.sm{padding:4px 8px;font-size:12px}
-
-/* TOOLBAR */
-.toolbar{display:flex;gap:8px;margin-bottom:.85rem;flex-wrap:wrap}
-.toolbar input{flex:1;min-width:140px;padding:7px 10px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit}
+/* ─── TOOLBAR ─────────────────────────────────────── */
+.toolbar{display:flex;gap:7px;margin-bottom:.85rem;flex-wrap:wrap}
+.toolbar input{flex:1;min-width:120px;padding:8px 10px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;-webkit-appearance:none}
 .toolbar input:focus{border-color:var(--green)}
-.toolbar select{padding:7px 9px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;cursor:pointer}
+.toolbar select{padding:8px 10px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;padding-right:26px}
 
-/* TABLE */
-.table-wrap{overflow-x:auto}
+/* ─── TABLE ───────────────────────────────────────── */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:12px}
-th{text-align:left;font-weight:600;font-size:10px;color:var(--text2);padding:7px 8px;border-bottom:0.5px solid var(--border2);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;background:var(--bg)}
-td{padding:8px 8px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle}
+th{text-align:left;font-weight:600;font-size:10px;color:var(--text2);padding:7px 8px;border-bottom:0.5px solid var(--border2);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;background:var(--bg);position:sticky;top:0;z-index:1}
+td{padding:10px 8px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg2)}
+tr{cursor:pointer}
 .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
-.badge.ok{background:var(--green-light);color:var(--green-dark)}
-.badge.low{background:var(--amber-light);color:var(--amber)}
-.badge.out{background:var(--red-light);color:var(--red)}
-.cat-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;white-space:nowrap;border:0.5px solid transparent}
+.badge.ok{background:var(--gl);color:var(--gd)}.badge.low{background:var(--al);color:var(--amber)}.badge.out{background:var(--rl);color:var(--red)}
+.cat-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;white-space:nowrap}
+.model-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:10px;font-weight:500;background:var(--bg2);color:var(--text3);white-space:nowrap}
 .qty-ctrl{display:flex;align-items:center;gap:5px}
-.qty-btn{width:24px;height:24px;border-radius:6px;border:0.5px solid var(--border2);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:background .1s;font-family:inherit;font-size:14px}
-.qty-btn:hover{background:var(--bg2)}
-.qty-num{min-width:28px;text-align:center;font-weight:600;font-size:13px}
-.color-dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0;margin-right:4px;border:0.5px solid var(--border2)}
-.prod-name-cell{display:flex;align-items:center;gap:6px}
+.qty-btn{width:26px;height:26px;border-radius:7px;border:0.5px solid var(--border2);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:background .1s;-webkit-appearance:none}
+.qty-btn:hover,.qty-btn:active{background:var(--bg2)}
+.qty-num{min-width:26px;text-align:center;font-weight:700;font-size:14px}
 .empty{text-align:center;padding:3rem;color:var(--text3);font-size:14px}
 .empty i{font-size:36px;display:block;margin-bottom:10px}
+.action-btns{display:flex;gap:4px}
 
-/* PRODUCT DETAIL MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;display:flex;align-items:flex-end;justify-content:center;opacity:0;transition:opacity .2s}
-.modal-overlay.open{opacity:1}
-.modal-overlay.open .modal-sheet{transform:translateY(0)}
-.modal-sheet{background:var(--bg);border-radius:16px 16px 0 0;width:100%;max-width:720px;max-height:90vh;overflow-y:auto;padding:1.5rem;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,0,.67,0)}
-.modal-handle{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 1.25rem}
-.modal-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:1.25rem}
-.modal-color-dot{width:44px;height:44px;border-radius:10px;flex-shrink:0;border:0.5px solid var(--border2)}
-.modal-title{flex:1}
-.modal-title h2{font-size:17px;font-weight:600;line-height:1.3}
-.modal-title p{font-size:12px;color:var(--text3);margin-top:3px}
-.modal-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem}
-.modal-tag{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;background:var(--bg2);color:var(--text2);border:0.5px solid var(--border)}
-.modal-tag.model{background:var(--blue-light);color:var(--blue)}
-.modal-prices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
-.price-card{background:var(--bg2);border-radius:var(--radius);padding:10px;text-align:center}
-.price-card .pl{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
-.price-card .pv{font-size:18px;font-weight:600;color:var(--text)}
-.price-card .pv.g{color:var(--green)}.price-card .pv.a{color:var(--amber)}.price-card .pv.b{color:var(--blue)}
-.modal-meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:13px;margin-bottom:1.25rem}
-.meta-row{display:flex;flex-direction:column;gap:2px}
-.meta-row .ml{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em}
-.meta-row .mv{color:var(--text);font-weight:500}
-.modal-actions{display:flex;gap:8px;border-top:0.5px solid var(--border);padding-top:1rem}
+/* ─── BUTTONS ─────────────────────────────────────── */
+.btn{padding:7px 13px;border-radius:var(--radius);border:0.5px solid var(--border2);font-size:13px;font-weight:500;cursor:pointer;background:var(--bg);color:var(--text);display:inline-flex;align-items:center;gap:6px;transition:background .1s,transform .1s;font-family:inherit;white-space:nowrap;-webkit-appearance:none}
+.btn:hover{background:var(--bg2)}.btn:active{transform:scale(0.96)}
+.btn.primary{background:var(--green);color:#fff;border-color:var(--gd)}
+.btn.primary:hover,.btn.primary:active{background:var(--gd)}
+.btn.danger{background:var(--rl);color:var(--red);border-color:rgba(163,45,45,.25)}
+.btn.sm{padding:4px 8px;font-size:12px}
+.btn.icon-only{padding:7px;min-width:34px;justify-content:center}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 
-/* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a18;color:#f0efe8;padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px}
-.toast.show{transform:translateX(-50%) translateY(0)}
-.toast.err{background:var(--red)}
-.toast.ok{background:var(--green)}
+/* ─── FORM ────────────────────────────────────────── */
+.form-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.form-grid-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.fgroup{display:flex;flex-direction:column;gap:4px}
+.fgroup label{font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.fgroup input,.fgroup select{width:100%;padding:8px 10px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;transition:border-color .15s;font-family:inherit;-webkit-appearance:none}
+.fgroup input:focus,.fgroup select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12)}
+.form-sep{height:1px;background:var(--border);margin:12px 0}
+.form-section-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
 
-/* MOBILE */
-.mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--border2);padding:.5rem;padding-bottom:calc(.5rem + env(safe-area-inset-bottom));z-index:100}
+/* ─── TAGS ────────────────────────────────────────── */
+.tag-input-wrap{border:0.5px solid var(--border2);border-radius:var(--radius);background:var(--bg2);padding:6px 8px;display:flex;flex-wrap:wrap;gap:5px;min-height:40px;cursor:text;transition:border-color .15s}
+.tag-input-wrap:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12)}
+.tag{display:inline-flex;align-items:center;gap:4px;background:var(--gl);color:var(--gd);padding:2px 8px;border-radius:20px;font-size:12px;font-weight:600}
+.del-tag{cursor:pointer;opacity:.6;font-size:15px;line-height:1;padding:0 1px;font-weight:400}
+.del-tag:hover{opacity:1}
+.tag-input{border:none;outline:none;background:transparent;font-size:13px;color:var(--text);font-family:inherit;min-width:80px;flex:1;padding:2px 0}
+.tag-suggestions{background:var(--bg);border:0.5px solid var(--border2);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,.12);position:absolute;z-index:200;width:100%;top:calc(100% + 4px);max-height:160px;overflow-y:auto}
+.tag-sug-item{padding:8px 12px;font-size:13px;cursor:pointer;color:var(--text)}
+.tag-sug-item:hover,.tag-sug-item:active{background:var(--bg2)}
+.tag-wrap-rel{position:relative}
+
+/* ─── MODAL ───────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--bg);border-radius:20px 20px 0 0;width:100%;max-width:600px;max-height:90dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;transform:translateY(50px);transition:transform .3s cubic-bezier(.34,1.2,.64,1)}
+.modal-overlay.show .modal{transform:translateY(0)}
+@media(min-width:680px){
+  .modal-overlay{align-items:center}
+  .modal{border-radius:16px;max-height:88dvh;max-width:560px}
+}
+.modal-handle{width:36px;height:4px;border-radius:2px;background:var(--border2);margin:10px auto 0}
+.modal-header{padding:14px 18px 0;display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:16px;font-weight:700;color:var(--text)}
+.modal-close{width:28px;height:28px;border-radius:50%;border:none;background:var(--bg2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text2);font-size:15px;-webkit-appearance:none}
+.modal-body{padding:14px 18px;padding-bottom:calc(16px + var(--sb))}
+
+/* ─── DETAIL ──────────────────────────────────────── */
+.detail-label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.detail-card{background:var(--bg2);border-radius:var(--radius);padding:10px 12px;text-align:center}
+.detail-card-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.detail-card-value{font-size:20px;font-weight:700;color:var(--text)}
+.detail-card-sub{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* ─── MOBILE BAR ──────────────────────────────────── */
+.mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--border2);padding:.4rem .5rem;padding-bottom:calc(.4rem + var(--sb));z-index:100}
 .mobile-bar-inner{display:flex;justify-content:space-around}
-.mob-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;border:none;background:none;cursor:pointer;color:var(--text3);font-size:10px;font-family:inherit;border-radius:8px;min-width:52px}
+.mob-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 6px;border:none;background:none;cursor:pointer;color:var(--text3);font-size:10px;font-family:inherit;border-radius:8px;min-width:48px;-webkit-appearance:none}
 .mob-btn.active{color:var(--green)}
-.mob-btn i{font-size:20px}
+.mob-btn i{font-size:22px}
 
-/* CARD VIEW (Mobile) */
-.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
-.prod-card{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:12px;cursor:pointer;transition:border-color .15s,box-shadow .15s;display:flex;flex-direction:column;gap:8px}
-.prod-card:hover{border-color:var(--green);box-shadow:0 2px 12px rgba(29,158,117,.1)}
-.prod-card-top{display:flex;align-items:center;gap:10px}
-.prod-card-dot{width:36px;height:36px;border-radius:8px;flex-shrink:0;border:0.5px solid var(--border2)}
-.prod-card-info{flex:1;min-width:0}
-.prod-card-name{font-size:13px;font-weight:600;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.prod-card-cat{font-size:11px;color:var(--text3);margin-top:1px}
-.prod-card-bottom{display:flex;align-items:center;justify-content:space-between}
-.prod-card-price{font-size:16px;font-weight:600;color:var(--green)}
-.prod-card-stock{font-size:12px;color:var(--text2)}
+/* ─── TOAST ───────────────────────────────────────── */
+.toast{position:fixed;bottom:calc(68px + var(--sb));left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a18;color:#f0efe8;padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.25)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--red)}.toast.ok{background:var(--green)}
+@media(min-width:680px){.toast{bottom:24px}}
 
-/* LOADING OVERLAY */
-.loading{position:fixed;inset:0;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;z-index:9999;transition:opacity .4s}
-.loading.hidden{opacity:0;pointer-events:none}
-.spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* MOBILE CATS DRAWER */
-.cats-drawer{position:fixed;inset:0;z-index:200;display:none}
-.cats-drawer.open{display:flex}
-.cats-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.4)}
-.cats-panel{position:absolute;bottom:0;left:0;right:0;background:var(--bg);border-radius:16px 16px 0 0;padding:1rem;padding-bottom:calc(1rem + env(safe-area-inset-bottom));max-height:75vh;overflow-y:auto}
-.cats-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:.75rem}
-.cats-item{padding:10px 12px;border-radius:var(--radius);border:0.5px solid var(--border);background:var(--bg2);cursor:pointer;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px;font-family:inherit;transition:all .15s}
-.cats-item:hover,.cats-item.active{background:var(--green-light);color:var(--green-dark);border-color:var(--green)}
-
-@media(max-width:720px){
+/* ─── RESPONSIVE ──────────────────────────────────── */
+@media(max-width:680px){
   .sidebar{display:none}
   .stats{grid-template-columns:1fr 1fr}
-  .form-grid{grid-template-columns:1fr 1fr}
-  .form-grid3{grid-template-columns:1fr 1fr}
+  .form-grid-3{grid-template-columns:1fr 1fr}
+  .form-grid-4{grid-template-columns:1fr 1fr}
   .mobile-bar{display:block}
-  .content{padding:1rem 1rem calc(70px + env(safe-area-inset-bottom))}
-  .topbar{padding:.75rem 1rem}
-  .modal-prices{grid-template-columns:1fr 1fr}
-  .modal-meta{grid-template-columns:1fr 1fr}
-  /* Show cards instead of table on mobile */
-  .table-panel{display:none}
-  .card-panel{display:block}
-}
-@media(min-width:721px){
-  .card-panel{display:none}
+  .content{padding:.85rem .85rem calc(72px + var(--sb))}
+  .topbar{padding:.72rem 1rem;padding-top:calc(.72rem + var(--st))}
 }
 @media(max-width:400px){
-  .stats{grid-template-columns:1fr 1fr}
-  .form-grid{grid-template-columns:1fr}
-  .form-grid3{grid-template-columns:1fr}
-  .modal-prices{grid-template-columns:1fr}
+  .form-grid-2{grid-template-columns:1fr}
+  .form-grid-4{grid-template-columns:1fr 1fr}
 }
 </style>
 </head>
 <body>
 
-<!-- LOADING -->
-<div class="loading" id="loading">
-  <div class="spinner"></div>
-  <span style="font-size:13px;color:var(--text2)">Cargando inventario...</span>
+<!-- ─── SPLASH ─────────────────────────────────────── -->
+<div id="splash">
+  <div class="splash-logo"><i class="ti ti-device-laptop"></i></div>
+  <div class="splash-title">SpiderMac</div>
+  <div class="splash-sub">Inventario de Repuestos</div>
+  <div class="splash-box">
+    <div class="splash-search-wrap">
+      <i class="ti ti-search"></i>
+      <input id="splash-search" type="search" placeholder="Buscar producto o modelo..." autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+    </div>
+    <div class="splash-suggestions" id="splash-suggestions" style="display:none"></div>
+    <button class="splash-enter" onclick="enterApp(document.getElementById('splash-search').value)">
+      <i class="ti ti-arrow-right"></i>Entrar al inventario
+    </button>
+  </div>
+  <div class="splash-status">
+    <div class="splash-dot" id="splash-dot"></div>
+    <span id="splash-status-text">Cargando inventario...</span>
+  </div>
 </div>
 
-<div class="layout">
+<!-- ─── APP ────────────────────────────────────────── -->
+<div class="layout" id="app" style="visibility:hidden">
 
-<!-- SIDEBAR (Desktop) -->
-<nav class="sidebar">
-  <div class="sidebar-logo">
-    <h2><i class="ti ti-device-laptop"></i>SpiderMac</h2>
-    <p>Inventario de Repuestos</p>
-  </div>
-  <div class="sidebar-scroll">
-    <div class="nav-section">Vistas</div>
-    <button class="nav-item" onclick="showPage('home')" id="nav-home"><i class="ti ti-home"></i>Inicio</button>
-    <button class="nav-item active" onclick="showPage('all')" id="nav-all"><i class="ti ti-layout-list"></i>Todo<span class="nav-count" id="nc-all">—</span></button>
-    <button class="nav-item" onclick="showPage('alerts')" id="nav-alerts"><i class="ti ti-alert-triangle"></i>Alertas<span class="nav-count" id="nc-alerts">—</span></button>
-
-    <div class="nav-section">Tipo de Repuesto</div>
-    <button class="nav-item" onclick="filterCat('Pantallas')" id="nav-Pantallas"><i class="ti ti-device-laptop"></i>Pantallas<span class="nav-count" id="nc-Pantallas">—</span></button>
-    <button class="nav-item" onclick="filterCat('Bisel')" id="nav-Bisel"><i class="ti ti-border-outer"></i>Bisel<span class="nav-count" id="nc-Bisel">—</span></button>
-    <button class="nav-item" onclick="filterCat('Batería')" id="nav-Batería"><i class="ti ti-battery"></i>Batería<span class="nav-count" id="nc-Batería">—</span></button>
-    <button class="nav-item" onclick="filterCat('Placa')" id="nav-Placa"><i class="ti ti-circuit-board"></i>Placa<span class="nav-count" id="nc-Placa">—</span></button>
-    <button class="nav-item" onclick="filterCat('Top Case')" id="nav-Top Case"><i class="ti ti-keyboard"></i>Top Case<span class="nav-count" id="nc-Top Case">—</span></button>
-    <button class="nav-item" onclick="filterCat('Trackpad')" id="nav-Trackpad"><i class="ti ti-hand-finger"></i>Trackpad<span class="nav-count" id="nc-Trackpad">—</span></button>
-    <button class="nav-item" onclick="filterCat('Touch Bar')" id="nav-Touch Bar"><i class="ti ti-adjustments-horizontal"></i>Touch Bar<span class="nav-count" id="nc-Touch Bar">—</span></button>
-    <button class="nav-item" onclick="filterCat('PDC / Carga')" id="nav-PDC / Carga"><i class="ti ti-plug"></i>PDC / Carga<span class="nav-count" id="nc-PDC / Carga">—</span></button>
-    <button class="nav-item" onclick="filterCat('Flex')" id="nav-Flex"><i class="ti ti-wave-square"></i>Flex<span class="nav-count" id="nc-Flex">—</span></button>
-    <button class="nav-item" onclick="filterCat('Ventilador')" id="nav-Ventilador"><i class="ti ti-wind"></i>Ventilador<span class="nav-count" id="nc-Ventilador">—</span></button>
-    <button class="nav-item" onclick="filterCat('Audio')" id="nav-Audio"><i class="ti ti-volume"></i>Audio<span class="nav-count" id="nc-Audio">—</span></button>
-    <button class="nav-item" onclick="filterCat('Huella / Botones')" id="nav-Huella / Botones"><i class="ti ti-fingerprint"></i>Huella / Botones<span class="nav-count" id="nc-Huella / Botones">—</span></button>
-    <button class="nav-item" onclick="filterCat('Adaptadores Disco')" id="nav-Adaptadores Disco"><i class="ti ti-server"></i>Adaptadores Disco<span class="nav-count" id="nc-Adaptadores Disco">—</span></button>
-    <button class="nav-item" onclick="filterCat('Discos SSD/NVMe')" id="nav-Discos SSD/NVMe"><i class="ti ti-device-sd-card"></i>Discos SSD/NVMe<span class="nav-count" id="nc-Discos SSD/NVMe">—</span></button>
-    <button class="nav-item" onclick="filterCat('Memoria RAM')" id="nav-Memoria RAM"><i class="ti ti-cpu"></i>Memoria RAM<span class="nav-count" id="nc-Memoria RAM">—</span></button>
-    <button class="nav-item" onclick="filterCat('Wifi / BT')" id="nav-Wifi / BT"><i class="ti ti-wifi"></i>Wifi / BT<span class="nav-count" id="nc-Wifi / BT">—</span></button>
-    <button class="nav-item" onclick="filterCat('Accesorios')" id="nav-Accesorios"><i class="ti ti-plug-connected"></i>Accesorios<span class="nav-count" id="nc-Accesorios">—</span></button>
-    <button class="nav-item" onclick="filterCat('Tornillos / Gomas')" id="nav-Tornillos / Gomas"><i class="ti ti-tool"></i>Tornillos / Gomas<span class="nav-count" id="nc-Tornillos / Gomas">—</span></button>
-    <button class="nav-item" onclick="filterCat('Componentes SMD')" id="nav-Componentes SMD"><i class="ti ti-atom"></i>Componentes SMD<span class="nav-count" id="nc-Componentes SMD">—</span></button>
-    <button class="nav-item" onclick="filterCat('Consolas')" id="nav-Consolas"><i class="ti ti-device-gamepad-2"></i>Consolas<span class="nav-count" id="nc-Consolas">—</span></button>
-
-    <div class="nav-section">Por Modelo</div>
-    <button class="nav-item" onclick="filterModel('A2337')" id="nav-m-A2337"><i class="ti ti-tag"></i>A2337 (Air M1)<span class="nav-count" id="nc-m-A2337">—</span></button>
-    <button class="nav-item" onclick="filterModel('A2338')" id="nav-m-A2338"><i class="ti ti-tag"></i>A2338 (Pro M1)<span class="nav-count" id="nc-m-A2338">—</span></button>
-    <button class="nav-item" onclick="filterModel('A2251')" id="nav-m-A2251"><i class="ti ti-tag"></i>A2251 (Pro 13 2020)<span class="nav-count" id="nc-m-A2251">—</span></button>
-    <button class="nav-item" onclick="filterModel('A2289')" id="nav-m-A2289"><i class="ti ti-tag"></i>A2289 (Pro 13 2020)<span class="nav-count" id="nc-m-A2289">—</span></button>
-    <button class="nav-item" onclick="filterModel('A2141')" id="nav-m-A2141"><i class="ti ti-tag"></i>A2141 (Pro 16 2019)<span class="nav-count" id="nc-m-A2141">—</span></button>
-    <button class="nav-item" onclick="filterModel('A1990')" id="nav-m-A1990"><i class="ti ti-tag"></i>A1990 (Pro 15 2019)<span class="nav-count" id="nc-m-A1990">—</span></button>
-    <button class="nav-item" onclick="filterModel('A1932')" id="nav-m-A1932"><i class="ti ti-tag"></i>A1932 (Air 2019)<span class="nav-count" id="nc-m-A1932">—</span></button>
-    <button class="nav-item" onclick="filterModel('A1708')" id="nav-m-A1708"><i class="ti ti-tag"></i>A1708 (Pro 13 2017)<span class="nav-count" id="nc-m-A1708">—</span></button>
-    <button class="nav-item" onclick="filterModel('A1706')" id="nav-m-A1706"><i class="ti ti-tag"></i>A1706 (Pro 13 TB)<span class="nav-count" id="nc-m-A1706">—</span></button>
-    <button class="nav-item" onclick="filterModel('A2179')" id="nav-m-A2179"><i class="ti ti-tag"></i>A2179 (Air 2020)<span class="nav-count" id="nc-m-A2179">—</span></button>
-    <button class="nav-item" onclick="filterModel('A2442')" id="nav-m-A2442"><i class="ti ti-tag"></i>A2442 (Pro M1 Pro)<span class="nav-count" id="nc-m-A2442">—</span></button>
-    <button class="nav-item" onclick="filterModel('A2485')" id="nav-m-A2485"><i class="ti ti-tag"></i>A2485 (Pro M1 Max)<span class="nav-count" id="nc-m-A2485">—</span></button>
-  </div>
-  <div class="sync-bar">
-    <div class="sync-dot" id="sync-dot"></div>
-    <span id="sync-text">Conectando...</span>
-  </div>
-</nav>
-
-<!-- MAIN -->
-<main class="main">
-  <div class="topbar">
-    <h1 id="page-title">Todo el inventario</h1>
-    <div class="topbar-right">
-      <button class="btn" onclick="showPage('home')" title="Inicio" id="home-btn" style="display:none"><i class="ti ti-home"></i></button>
-      <button class="btn" onclick="loadData()" title="Sincronizar"><i class="ti ti-refresh"></i></button>
-      <button class="btn primary" onclick="openAddForm()"><i class="ti ti-plus"></i><span class="hide-sm">Agregar</span></button>
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sidebar-logo">
+      <h2><i class="ti ti-device-laptop"></i>SpiderMac</h2>
+      <p>Inventario de Repuestos</p>
     </div>
-  </div>
+    <div class="sidebar-scroll">
+      <div class="nav-section">Vistas</div>
+      <button class="nav-item active" onclick="showPage('all')" id="nav-all"><i class="ti ti-layout-list"></i>Todo<span class="nav-count" id="nc-all">—</span></button>
+      <button class="nav-item" onclick="showPage('alerts')" id="nav-alerts"><i class="ti ti-alert-triangle"></i>Alertas<span class="nav-count" id="nc-alerts">—</span></button>
+      <div class="nav-section">Tipo</div>
+      <button class="nav-item" onclick="filterCat('Pantallas')" id="nav-Pantallas"><i class="ti ti-device-laptop"></i>Pantallas<span class="nav-count" id="nc-Pantallas">—</span></button>
+      <button class="nav-item" onclick="filterCat('Bisel')" id="nav-Bisel"><i class="ti ti-border-outer"></i>Bisel<span class="nav-count" id="nc-Bisel">—</span></button>
+      <button class="nav-item" onclick="filterCat('Batería')" id="nav-Batería"><i class="ti ti-battery"></i>Batería<span class="nav-count" id="nc-Batería">—</span></button>
+      <button class="nav-item" onclick="filterCat('Placa')" id="nav-Placa"><i class="ti ti-circuit-board"></i>Placa<span class="nav-count" id="nc-Placa">—</span></button>
+      <button class="nav-item" onclick="filterCat('Top Case')" id="nav-Top Case"><i class="ti ti-keyboard"></i>Top Case<span class="nav-count" id="nc-Top Case">—</span></button>
+      <button class="nav-item" onclick="filterCat('Trackpad')" id="nav-Trackpad"><i class="ti ti-hand-finger"></i>Trackpad<span class="nav-count" id="nc-Trackpad">—</span></button>
+      <button class="nav-item" onclick="filterCat('Touch Bar')" id="nav-Touch Bar"><i class="ti ti-adjustments-horizontal"></i>Touch Bar<span class="nav-count" id="nc-Touch Bar">—</span></button>
+      <button class="nav-item" onclick="filterCat('PDC / Carga')" id="nav-PDC / Carga"><i class="ti ti-plug"></i>PDC / Carga<span class="nav-count" id="nc-PDC / Carga">—</span></button>
+      <button class="nav-item" onclick="filterCat('Flex')" id="nav-Flex"><i class="ti ti-wave-square"></i>Flex<span class="nav-count" id="nc-Flex">—</span></button>
+      <button class="nav-item" onclick="filterCat('Ventilador')" id="nav-Ventilador"><i class="ti ti-wind"></i>Ventilador<span class="nav-count" id="nc-Ventilador">—</span></button>
+      <button class="nav-item" onclick="filterCat('Audio')" id="nav-Audio"><i class="ti ti-volume"></i>Audio<span class="nav-count" id="nc-Audio">—</span></button>
+      <button class="nav-item" onclick="filterCat('Huella / Botones')" id="nav-Huella / Botones"><i class="ti ti-fingerprint"></i>Huella<span class="nav-count" id="nc-Huella / Botones">—</span></button>
+      <button class="nav-item" onclick="filterCat('Adaptadores Disco')" id="nav-Adaptadores Disco"><i class="ti ti-server"></i>Adaptadores<span class="nav-count" id="nc-Adaptadores Disco">—</span></button>
+      <button class="nav-item" onclick="filterCat('Discos SSD/NVMe')" id="nav-Discos SSD/NVMe"><i class="ti ti-device-sd-card"></i>Discos<span class="nav-count" id="nc-Discos SSD/NVMe">—</span></button>
+      <button class="nav-item" onclick="filterCat('Memoria RAM')" id="nav-Memoria RAM"><i class="ti ti-cpu"></i>Memoria RAM<span class="nav-count" id="nc-Memoria RAM">—</span></button>
+      <button class="nav-item" onclick="filterCat('Wifi / BT')" id="nav-Wifi / BT"><i class="ti ti-wifi"></i>Wifi / BT<span class="nav-count" id="nc-Wifi / BT">—</span></button>
+      <button class="nav-item" onclick="filterCat('Accesorios')" id="nav-Accesorios"><i class="ti ti-plug-connected"></i>Accesorios<span class="nav-count" id="nc-Accesorios">—</span></button>
+      <button class="nav-item" onclick="filterCat('Tornillos / Gomas')" id="nav-Tornillos / Gomas"><i class="ti ti-tool"></i>Tornillos<span class="nav-count" id="nc-Tornillos / Gomas">—</span></button>
+      <button class="nav-item" onclick="filterCat('Componentes SMD')" id="nav-Componentes SMD"><i class="ti ti-atom"></i>Comp. SMD<span class="nav-count" id="nc-Componentes SMD">—</span></button>
+      <button class="nav-item" onclick="filterCat('Consolas')" id="nav-Consolas"><i class="ti ti-device-gamepad-2"></i>Consolas<span class="nav-count" id="nc-Consolas">—</span></button>
+      <div class="nav-section">Modelo Mac</div>
+      <button class="nav-item" onclick="filterModel('A2338')" id="nav-m-A2338"><i class="ti ti-tag"></i>A2338 M1 Pro<span class="nav-count" id="nc-m-A2338">—</span></button>
+      <button class="nav-item" onclick="filterModel('A2337')" id="nav-m-A2337"><i class="ti ti-tag"></i>A2337 M1 Air<span class="nav-count" id="nc-m-A2337">—</span></button>
+      <button class="nav-item" onclick="filterModel('A2289')" id="nav-m-A2289"><i class="ti ti-tag"></i>A2289<span class="nav-count" id="nc-m-A2289">—</span></button>
+      <button class="nav-item" onclick="filterModel('A2251')" id="nav-m-A2251"><i class="ti ti-tag"></i>A2251<span class="nav-count" id="nc-m-A2251">—</span></button>
+      <button class="nav-item" onclick="filterModel('A2179')" id="nav-m-A2179"><i class="ti ti-tag"></i>A2179<span class="nav-count" id="nc-m-A2179">—</span></button>
+      <button class="nav-item" onclick="filterModel('A2141')" id="nav-m-A2141"><i class="ti ti-tag"></i>A2141 16"<span class="nav-count" id="nc-m-A2141">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1932')" id="nav-m-A1932"><i class="ti ti-tag"></i>A1932<span class="nav-count" id="nc-m-A1932">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1990')" id="nav-m-A1990"><i class="ti ti-tag"></i>A1990 15"<span class="nav-count" id="nc-m-A1990">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1989')" id="nav-m-A1989"><i class="ti ti-tag"></i>A1989 13"<span class="nav-count" id="nc-m-A1989">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1708')" id="nav-m-A1708"><i class="ti ti-tag"></i>A1708<span class="nav-count" id="nc-m-A1708">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1707')" id="nav-m-A1707"><i class="ti ti-tag"></i>A1707 15"<span class="nav-count" id="nc-m-A1707">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1706')" id="nav-m-A1706"><i class="ti ti-tag"></i>A1706 13"<span class="nav-count" id="nc-m-A1706">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1534')" id="nav-m-A1534"><i class="ti ti-tag"></i>A1534 12"<span class="nav-count" id="nc-m-A1534">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1466')" id="nav-m-A1466"><i class="ti ti-tag"></i>A1466<span class="nav-count" id="nc-m-A1466">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1465')" id="nav-m-A1465"><i class="ti ti-tag"></i>A1465 11"<span class="nav-count" id="nc-m-A1465">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1502')" id="nav-m-A1502"><i class="ti ti-tag"></i>A1502 rMBP<span class="nav-count" id="nc-m-A1502">—</span></button>
+      <button class="nav-item" onclick="filterModel('A1398')" id="nav-m-A1398"><i class="ti ti-tag"></i>A1398 15"<span class="nav-count" id="nc-m-A1398">—</span></button>
+    </div>
+    <div class="sync-bar">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-text">Conectando...</span>
+    </div>
+  </nav>
 
-  <div class="content">
-
-    <!-- SPLASH PAGE -->
-    <div id="page-home" style="display:none">
-      <div class="splash">
-        <div class="splash-logo"><i class="ti ti-device-laptop"></i></div>
-        <div class="splash-title">SpiderMac</div>
-        <div class="splash-sub">Inventario de Repuestos</div>
-        <div class="splash-search">
-          <input type="text" id="splash-q" placeholder="Buscar repuesto, modelo, categoría..." oninput="splashSearch()" onkeydown="if(event.key==='Enter')doSplashSearch()">
-          <button onclick="doSplashSearch()"><i class="ti ti-search"></i></button>
-        </div>
-        <div class="splash-cats" id="splash-cats-list"></div>
-        <div class="splash-loading" id="splash-loading-indicator">
-          <div class="mini-spinner"></div>
-          <span id="splash-load-text">Cargando inventario en segundo plano...</span>
-        </div>
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <h1 id="page-title">Todo el inventario</h1>
+      <div class="topbar-right">
+        <button class="btn icon-only" onclick="loadData()" title="Sincronizar"><i class="ti ti-refresh"></i></button>
+        <button class="btn primary" onclick="openAddModal()"><i class="ti ti-plus"></i>Agregar</button>
       </div>
     </div>
-
-    <!-- INVENTORY PAGE -->
-    <div id="page-inventory">
+    <div class="content">
       <div class="stats">
         <div class="stat"><div class="stat-label">Productos</div><div class="stat-value" id="s-total">—</div></div>
         <div class="stat"><div class="stat-label">En stock</div><div class="stat-value g" id="s-ok">—</div></div>
         <div class="stat"><div class="stat-label">Stock bajo</div><div class="stat-value a" id="s-low">—</div></div>
         <div class="stat"><div class="stat-label">Sin stock</div><div class="stat-value r" id="s-out">—</div></div>
       </div>
-
-      <!-- TABLE PANEL (Desktop) -->
-      <div class="panel table-panel">
+      <div class="panel">
         <div class="toolbar">
-          <input type="text" id="search" placeholder="Buscar..." oninput="renderTable()">
+          <input type="text" id="search" placeholder="Buscar producto, modelo..." oninput="renderTable()" autocomplete="off">
           <select id="f-status" onchange="renderTable()">
             <option value="">Todo el stock</option>
             <option value="ok">En stock</option>
@@ -356,771 +318,132 @@ tr:hover td{background:var(--bg2)}
             <option value="out">Sin stock</option>
           </select>
           <select id="f-sort" onchange="renderTable()">
-            <option value="nombre">Nombre A-Z</option>
-            <option value="qty-asc">Menor cantidad</option>
-            <option value="qty-desc">Mayor cantidad</option>
+            <option value="nombre">A-Z</option>
+            <option value="qty-asc">Menor stock</option>
+            <option value="qty-desc">Mayor stock</option>
           </select>
         </div>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th style="width:36%">Producto</th>
-                <th style="width:13%">Categoría</th>
-                <th style="width:12%">Modelo</th>
-                <th style="width:15%">Cantidad</th>
-                <th style="width:10%">Precio</th>
-                <th style="width:8%">Estado</th>
-                <th style="width:6%"></th>
-              </tr>
-            </thead>
+            <thead><tr>
+              <th style="width:42%">Producto</th>
+              <th style="width:13%">Precio</th>
+              <th style="width:18%">Cantidad</th>
+              <th style="width:11%">Estado</th>
+              <th style="width:8%"></th>
+            </tr></thead>
             <tbody id="tbody"></tbody>
           </table>
         </div>
         <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:right" id="row-count"></div>
       </div>
-
-      <!-- CARD PANEL (Mobile) -->
-      <div class="panel card-panel" style="padding:0.75rem">
-        <div class="toolbar" style="margin-bottom:0.5rem">
-          <input type="text" id="search-mob" placeholder="Buscar..." oninput="renderCards()">
-          <select id="f-status-mob" onchange="renderCards()">
-            <option value="">Todo</option>
-            <option value="ok">En stock</option>
-            <option value="low">Stock bajo</option>
-            <option value="out">Sin stock</option>
-          </select>
-        </div>
-        <div class="card-grid" id="card-grid"></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:right" id="card-count"></div>
-      </div>
     </div>
-  </div>
-</main>
+  </main>
 </div>
 
-<!-- MOBILE BOTTOM BAR -->
+<!-- ─── MOBILE BAR ──────────────────────────────────── -->
 <div class="mobile-bar">
   <div class="mobile-bar-inner">
-    <button class="mob-btn" id="mob-home" onclick="showPage('home')"><i class="ti ti-home"></i>Inicio</button>
     <button class="mob-btn active" id="mob-all" onclick="showPage('all')"><i class="ti ti-layout-list"></i>Todo</button>
     <button class="mob-btn" id="mob-alerts" onclick="showPage('alerts')"><i class="ti ti-alert-triangle"></i>Alertas</button>
-    <button class="mob-btn" onclick="openAddForm()"><i class="ti ti-plus"></i>Agregar</button>
-    <button class="mob-btn" onclick="showMobileCats()"><i class="ti ti-category"></i>Más</button>
+    <button class="mob-btn" onclick="openAddModal()"><i class="ti ti-plus"></i>Agregar</button>
+    <button class="mob-btn" onclick="openMobileCats()"><i class="ti ti-category"></i>Filtrar</button>
+    <button class="mob-btn" onclick="loadData()"><i class="ti ti-refresh"></i>Sync</button>
   </div>
 </div>
 
-<!-- MOBILE CATEGORIES DRAWER -->
-<div class="cats-drawer" id="cats-drawer">
-  <div class="cats-backdrop" onclick="closeMobileCats()"></div>
-  <div class="cats-panel">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-      <strong style="font-size:14px">Filtrar por</strong>
-      <button class="btn sm" onclick="closeMobileCats()"><i class="ti ti-x"></i></button>
-    </div>
-    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:.75rem 0 .25rem;font-weight:600">Tipo</div>
-    <div class="cats-grid" id="mob-cats-type"></div>
-    <div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:.75rem 0 .25rem;font-weight:600">Modelo</div>
-    <div class="cats-grid" id="mob-cats-model"></div>
-  </div>
-</div>
-
-<!-- ADD / EDIT MODAL -->
-<div class="modal-overlay" id="form-overlay" onclick="handleOverlayClick(event)">
-  <div class="modal-sheet" id="form-sheet">
-    <div class="modal-handle"></div>
-    <div class="panel-title" id="form-title"><i class="ti ti-plus"></i>Agregar producto</div>
-
-    <div class="form-grid">
-      <div class="fgroup"><label>Nombre del producto</label><input type="text" id="f-name" placeholder="Ej: PANTALLA A2337 SILVER"></div>
-      <div class="fgroup"><label>Categoría</label>
-        <select id="f-cat">
-          <option>Pantallas</option><option>Bisel</option><option>Batería</option>
-          <option>Placa</option><option>Top Case</option><option>Trackpad</option>
-          <option>Touch Bar</option><option>PDC / Carga</option><option>Flex</option>
-          <option>Ventilador</option><option>Audio</option><option>Huella / Botones</option>
-          <option>Adaptadores Disco</option><option>Discos SSD/NVMe</option><option>Memoria RAM</option>
-          <option>Wifi / BT</option><option>Accesorios</option><option>Tornillos / Gomas</option>
-          <option>Componentes SMD</option><option>Consolas</option>
-        </select>
-      </div>
-      <div class="fgroup"><label>Cantidad</label><input type="number" id="f-qty" placeholder="0" min="0"></div>
-      <div class="fgroup"><label>Stock mín.</label><input type="number" id="f-min" placeholder="2" min="0"></div>
-    </div>
-
-    <div class="form-grid-2col" style="margin-bottom:8px">
-      <div class="fgroup"><label>Modelo(s)</label>
-        <input type="text" id="f-models" placeholder="A2337, A2338 (separados por coma)">
-      </div>
-      <div class="fgroup"><label>Subcategoría / Variante</label>
-        <input type="text" id="f-subcat" placeholder="Ej: Silver, Space Gray, 13 pulgadas">
-      </div>
-    </div>
-
-    <div class="form-grid3" style="margin-bottom:8px">
-      <div class="fgroup"><label>Costo unitario</label><input type="text" id="f-cost" placeholder="$0"></div>
-      <div class="fgroup"><label>Precio venta</label><input type="text" id="f-price" placeholder="$0"></div>
-      <div class="fgroup"><label>Precio competencia</label><input type="text" id="f-comp" placeholder="$0"></div>
-    </div>
-
-    <div class="fgroup" style="margin-bottom:8px">
-      <label>Notas</label>
-      <textarea id="f-notes" placeholder="Observaciones, ubicación en bodega, proveedor..."></textarea>
-    </div>
-
-    <div class="fgroup" style="margin-bottom:1rem">
-      <label>Color / Etiqueta</label>
-      <div class="color-row" id="color-picker"></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn primary" onclick="saveProduct()"><i class="ti ti-check"></i>Guardar en Sheet</button>
-      <button class="btn" onclick="closeForm()"><i class="ti ti-x"></i>Cancelar</button>
-      <button class="btn danger" onclick="deleteCurrentProduct()" id="delete-btn" style="display:none;margin-left:auto"><i class="ti ti-trash"></i>Eliminar</button>
-    </div>
-  </div>
-</div>
-
-<!-- PRODUCT DETAIL MODAL -->
-<div class="modal-overlay" id="detail-overlay" onclick="handleDetailOverlayClick(event)">
-  <div class="modal-sheet" id="detail-sheet">
+<!-- ─── EDIT / ADD MODAL ────────────────────────────── -->
+<div class="modal-overlay" id="edit-modal" onclick="closeModal(event)">
+  <div class="modal">
     <div class="modal-handle"></div>
     <div class="modal-header">
-      <div class="modal-color-dot" id="d-color"></div>
-      <div class="modal-title">
-        <h2 id="d-name">—</h2>
-        <p id="d-cat">—</p>
-      </div>
-      <button class="btn sm" onclick="closeDetail()"><i class="ti ti-x"></i></button>
+      <h3 id="modal-title">Agregar producto</h3>
+      <button class="modal-close" onclick="closeEditModal()"><i class="ti ti-x"></i></button>
     </div>
-
-    <div class="modal-tags" id="d-tags"></div>
-
-    <div class="modal-prices">
-      <div class="price-card">
-        <div class="pl">Precio venta</div>
-        <div class="pv g" id="d-price">—</div>
+    <div class="modal-body">
+      <div class="form-section-label">Información básica</div>
+      <div style="margin-bottom:8px">
+        <div class="fgroup"><label>Nombre del producto</label>
+          <input type="text" id="m-nombre" placeholder="Ej: PANTALLA A2337 SPACE GRAY 99%">
+        </div>
       </div>
-      <div class="price-card">
-        <div class="pl">Costo compra</div>
-        <div class="pv a" id="d-cost">—</div>
+      <div class="form-grid-2" style="margin-bottom:8px">
+        <div class="fgroup"><label>Tipo</label>
+          <select id="m-cat">
+            <option>Pantallas</option><option>Bisel</option><option>Batería</option>
+            <option>Placa</option><option>Top Case</option><option>Trackpad</option>
+            <option>Touch Bar</option><option>PDC / Carga</option><option>Flex</option>
+            <option>Ventilador</option><option>Audio</option><option>Huella / Botones</option>
+            <option>Adaptadores Disco</option><option>Discos SSD/NVMe</option><option>Memoria RAM</option>
+            <option>Wifi / BT</option><option>Accesorios</option><option>Tornillos / Gomas</option>
+            <option>Componentes SMD</option><option>Consolas</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Color</label>
+          <select id="m-color">
+            <option value="">— Sin color —</option>
+            <option>Space Gray</option><option>Silver</option><option>Gold Rose</option>
+            <option>Gold</option><option>Midnight</option><option>Starlight</option>
+            <option>Negro</option><option>Blanco</option><option>Varios colores</option>
+          </select>
+        </div>
       </div>
-      <div class="price-card">
-        <div class="pl">Competencia</div>
-        <div class="pv b" id="d-comp">—</div>
+      <div class="form-sep"></div>
+      <div class="form-section-label">Modelos compatibles</div>
+      <div class="tag-wrap-rel" style="margin-bottom:6px">
+        <div class="tag-input-wrap" id="tags-wrap" onclick="document.getElementById('tag-input').focus()">
+          <span id="tags-container"></span>
+          <input id="tag-input" class="tag-input" placeholder="Escribe y presiona Enter (ej: A2337)" autocomplete="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="tag-suggestions" id="tag-suggestions" style="display:none"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Agrega modelos compatibles. Se usarán para filtrar y buscar.</div>
+      <div class="form-sep"></div>
+      <div class="form-section-label">Stock y precios</div>
+      <div class="form-grid-4" style="margin-bottom:8px">
+        <div class="fgroup"><label>Cantidad</label><input type="number" id="m-qty" min="0" placeholder="0" inputmode="numeric"></div>
+        <div class="fgroup"><label>Stock mín.</label><input type="number" id="m-min" min="0" placeholder="2" inputmode="numeric"></div>
+        <div class="fgroup"><label>Costo</label><input type="text" id="m-costo" placeholder="$0"></div>
+        <div class="fgroup"><label>Precio venta</label><input type="text" id="m-precio" placeholder="$0"></div>
+      </div>
+      <div class="fgroup" style="margin-bottom:0">
+        <label>Precio competencia</label>
+        <input type="text" id="m-comp" placeholder="$0">
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" id="modal-save-btn" onclick="saveModal()"><i class="ti ti-check"></i>Guardar</button>
+        <button class="btn danger" id="modal-delete-btn" onclick="deleteFromModal()" style="display:none"><i class="ti ti-trash"></i>Eliminar</button>
+        <button class="btn" onclick="closeEditModal()">Cancelar</button>
       </div>
     </div>
+  </div>
+</div>
 
-    <div class="modal-meta">
-      <div class="meta-row"><span class="ml">Stock actual</span><span class="mv" id="d-qty">—</span></div>
-      <div class="meta-row"><span class="ml">Stock mínimo</span><span class="mv" id="d-min">—</span></div>
-      <div class="meta-row"><span class="ml">Subcategoría</span><span class="mv" id="d-subcat">—</span></div>
-      <div class="meta-row"><span class="ml">Estado</span><span class="mv" id="d-status">—</span></div>
+<!-- ─── DETAIL MODAL ──────────────────────────────── -->
+<div class="modal-overlay" id="detail-modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h3>Detalle del producto</h3>
+      <button class="modal-close" onclick="closeDetailModal()"><i class="ti ti-x"></i></button>
     </div>
+    <div class="modal-body" id="detail-body"></div>
+  </div>
+</div>
 
-    <div id="d-notes-section" style="margin-bottom:1rem;display:none">
-      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">Notas</div>
-      <div id="d-notes" style="font-size:13px;color:var(--text2);background:var(--bg2);padding:8px 10px;border-radius:var(--radius)"></div>
+<!-- ─── FILTER MODAL ──────────────────────────────── -->
+<div class="modal-overlay" id="filter-modal" onclick="closeFilterModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <h3>Filtrar por</h3>
+      <button class="modal-close" onclick="closeModal2('filter-modal')"><i class="ti ti-x"></i></button>
     </div>
-
-    <div class="modal-actions">
-      <button class="btn primary" onclick="editCurrentProduct()"><i class="ti ti-edit"></i>Editar</button>
-      <div style="display:flex;align-items:center;gap:5px;margin-left:auto">
-        <button class="qty-btn" onclick="changeDetailQty(-1)">−</button>
-        <span class="qty-num" id="d-qty-ctrl">0</span>
-        <button class="qty-btn" onclick="changeDetailQty(1)">+</button>
-      </div>
-    </div>
+    <div class="modal-body" id="filter-modal-body"></div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
-<script>
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyBObCv3vWy6XVWUalilYHUC5QjbbrDfTO6htblnGOhkxIm3JBUgcu1mnL0sQ37OYfR-A/exec';
-
-const COLORS = [
-  {name:'Gris',hex:'#888780'},{name:'Verde',hex:'#1D9E75'},{name:'Azul',hex:'#185FA5'},
-  {name:'Ámbar',hex:'#BA7517'},{name:'Rojo',hex:'#A32D2D'},{name:'Rosa',hex:'#D4537E'},
-  {name:'Morado',hex:'#534AB7'},{name:'Coral',hex:'#D85A30'},{name:'Negro',hex:'#2C2C2A'},
-  {name:'Blanco',hex:'#D3D1C7'}
-];
-
-const CATS = ['Pantallas','Bisel','Batería','Placa','Top Case','Trackpad','Touch Bar','PDC / Carga',
-  'Flex','Ventilador','Audio','Huella / Botones','Adaptadores Disco','Discos SSD/NVMe',
-  'Memoria RAM','Wifi / BT','Accesorios','Tornillos / Gomas','Componentes SMD','Consolas'];
-
-const MODELS = ['A2337','A2338','A2251','A2289','A2141','A1990','A1932','A1708','A1706','A2179','A2442','A2485'];
-
-let data = [];
-let currentPage = 'all';
-let currentFilter = '';
-let currentModel = '';
-let editingRowIndex = null;
-let selectedColor = COLORS[0].hex;
-let detailProduct = null;
-let dataLoaded = false;
-
-// ─── INIT ──────────────────────────────────────────────────────────────────
-window.addEventListener('DOMContentLoaded', () => {
-  buildColorPicker();
-  buildMobileCats();
-  buildSplashCats();
-  showPage('home');
-  loadData();
-  setTimeout(() => {
-    document.getElementById('loading').classList.add('hidden');
-  }, 400);
-});
-
-function buildColorPicker() {
-  const cp = document.getElementById('color-picker');
-  COLORS.forEach(c => {
-    const s = document.createElement('div');
-    s.className = 'color-swatch' + (c.hex === selectedColor ? ' selected' : '');
-    s.style.background = c.hex;
-    s.title = c.name;
-    s.onclick = () => {
-      document.querySelectorAll('.color-swatch').forEach(x => x.classList.remove('selected'));
-      s.classList.add('selected');
-      selectedColor = c.hex;
-    };
-    cp.appendChild(s);
-  });
-}
-
-function buildMobileCats() {
-  const tc = document.getElementById('mob-cats-type');
-  const mc = document.getElementById('mob-cats-model');
-  CATS.forEach(c => {
-    const b = document.createElement('button');
-    b.className = 'cats-item';
-    b.textContent = c;
-    b.onclick = () => { filterCat(c); closeMobileCats(); };
-    tc.appendChild(b);
-  });
-  MODELS.forEach(m => {
-    const b = document.createElement('button');
-    b.className = 'cats-item';
-    b.textContent = m;
-    b.onclick = () => { filterModel(m); closeMobileCats(); };
-    mc.appendChild(b);
-  });
-}
-
-function buildSplashCats() {
-  const sc = document.getElementById('splash-cats-list');
-  [...CATS.slice(0,8), ...MODELS.slice(0,6)].forEach(c => {
-    const b = document.createElement('button');
-    b.className = 'splash-cat';
-    b.textContent = c;
-    b.onclick = () => {
-      if (MODELS.includes(c)) filterModel(c);
-      else filterCat(c);
-    };
-    sc.appendChild(b);
-  });
-}
-
-// ─── DATA ──────────────────────────────────────────────────────────────────
-function setSyncStatus(state, text) {
-  const dot = document.getElementById('sync-dot');
-  const txt = document.getElementById('sync-text');
-  dot.className = 'sync-dot ' + state;
-  txt.textContent = text;
-}
-
-async function loadData() {
-  setSyncStatus('syncing', 'Sincronizando...');
-  document.getElementById('splash-load-text').textContent = 'Cargando inventario...';
-  try {
-    const res = await fetch(SCRIPT_URL + '?action=getAll&t=' + Date.now());
-    const json = await res.json();
-    data = json.data || [];
-    dataLoaded = true;
-    updateStats();
-    updateNavCounts();
-    renderTable();
-    renderCards();
-    updateSplashLoaded();
-    setSyncStatus('ok', 'Sincronizado');
-  } catch(e) {
-    setSyncStatus('err', 'Sin conexión');
-    document.getElementById('splash-load-text').textContent = 'Error al cargar. Reintenta.';
-    showToast('Error de conexión con Google Sheets', 'err');
-  }
-}
-
-function updateSplashLoaded() {
-  const el = document.getElementById('splash-loading-indicator');
-  el.innerHTML = '<i class="ti ti-check" style="color:var(--green)"></i><span>' + data.length + ' productos cargados</span>';
-}
-
-// ─── STATS & COUNTS ────────────────────────────────────────────────────────
-function getStatus(p) {
-  const qty = parseInt(p.cantidad)||0;
-  const min = parseInt(p.stock_min)||0;
-  if (qty === 0) return 'out';
-  if (qty <= min) return 'low';
-  return 'ok';
-}
-
-function updateStats() {
-  const total = data.length;
-  const ok = data.filter(p => getStatus(p)==='ok').length;
-  const low = data.filter(p => getStatus(p)==='low').length;
-  const out = data.filter(p => getStatus(p)==='out').length;
-  document.getElementById('s-total').textContent = total;
-  document.getElementById('s-ok').textContent = ok;
-  document.getElementById('s-low').textContent = low;
-  document.getElementById('s-out').textContent = out;
-}
-
-function updateNavCounts() {
-  document.getElementById('nc-all').textContent = data.length;
-  document.getElementById('nc-alerts').textContent = data.filter(p=>getStatus(p)!=='ok').length;
-  CATS.forEach(c => {
-    const el = document.getElementById('nc-'+c);
-    if (el) el.textContent = data.filter(p=>p.categoria===c).length;
-  });
-  MODELS.forEach(m => {
-    const el = document.getElementById('nc-m-'+m);
-    if (el) el.textContent = data.filter(p => getModels(p).includes(m)).length;
-  });
-}
-
-function getModels(p) {
-  if (!p.modelos) return [];
-  return p.modelos.split(',').map(x=>x.trim().toUpperCase()).filter(Boolean);
-}
-
-// ─── PAGES ─────────────────────────────────────────────────────────────────
-function showPage(page) {
-  currentPage = page;
-  currentFilter = '';
-  currentModel = '';
-
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('.mob-btn').forEach(x=>x.classList.remove('active'));
-
-  const homeBtn = document.getElementById('home-btn');
-  if (page === 'home') {
-    document.getElementById('page-home').style.display = '';
-    document.getElementById('page-inventory').style.display = 'none';
-    document.getElementById('nav-home').classList.add('active');
-    document.getElementById('mob-home').classList.add('active');
-    document.getElementById('page-title').textContent = 'SpiderMac';
-    homeBtn.style.display = 'none';
-  } else {
-    document.getElementById('page-home').style.display = 'none';
-    document.getElementById('page-inventory').style.display = '';
-    homeBtn.style.display = '';
-    if (page === 'all') {
-      document.getElementById('nav-all').classList.add('active');
-      document.getElementById('mob-all').classList.add('active');
-      document.getElementById('page-title').textContent = 'Todo el inventario';
-    } else {
-      document.getElementById('nav-alerts').classList.add('active');
-      document.getElementById('mob-alerts').classList.add('active');
-      document.getElementById('page-title').textContent = 'Alertas de stock';
-    }
-    renderTable();
-    renderCards();
-  }
-}
-
-function filterCat(cat) {
-  currentPage = 'all';
-  currentFilter = cat;
-  currentModel = '';
-  document.getElementById('page-home').style.display = 'none';
-  document.getElementById('page-inventory').style.display = '';
-  document.getElementById('home-btn').style.display = '';
-  document.getElementById('page-title').textContent = cat;
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  const navEl = document.getElementById('nav-'+cat);
-  if (navEl) navEl.classList.add('active');
-  renderTable();
-  renderCards();
-}
-
-function filterModel(model) {
-  currentPage = 'all';
-  currentFilter = '';
-  currentModel = model;
-  document.getElementById('page-home').style.display = 'none';
-  document.getElementById('page-inventory').style.display = '';
-  document.getElementById('home-btn').style.display = '';
-  document.getElementById('page-title').textContent = 'Modelo ' + model;
-  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
-  const navEl = document.getElementById('nav-m-'+model);
-  if (navEl) navEl.classList.add('active');
-  renderTable();
-  renderCards();
-}
-
-// ─── SPLASH SEARCH ─────────────────────────────────────────────────────────
-function splashSearch() {}
-function doSplashSearch() {
-  const q = document.getElementById('splash-q').value.trim();
-  if (!q) return;
-  document.getElementById('search').value = q;
-  document.getElementById('search-mob').value = q;
-  showPage('all');
-  renderTable();
-  renderCards();
-}
-
-// ─── TABLE RENDER ──────────────────────────────────────────────────────────
-function getFiltered() {
-  const q = (document.getElementById('search')?.value || '').toLowerCase();
-  const statusF = document.getElementById('f-status')?.value || '';
-  const sortV = document.getElementById('f-sort')?.value || 'nombre';
-
-  let rows = [...data];
-  if (currentPage === 'alerts') rows = rows.filter(p => getStatus(p) !== 'ok');
-  if (currentFilter) rows = rows.filter(p => p.categoria === currentFilter);
-  if (currentModel) rows = rows.filter(p => getModels(p).includes(currentModel));
-  if (q) rows = rows.filter(p => {
-    const modelStr = (p.modelos||'').toLowerCase();
-    return (p.nombre||'').toLowerCase().includes(q) ||
-           (p.categoria||'').toLowerCase().includes(q) ||
-           (p.subcat||'').toLowerCase().includes(q) ||
-           modelStr.includes(q);
-  });
-  if (statusF) rows = rows.filter(p => getStatus(p) === statusF);
-  if (sortV === 'qty-asc') rows.sort((a,b)=>(parseInt(a.cantidad)||0)-(parseInt(b.cantidad)||0));
-  else if (sortV === 'qty-desc') rows.sort((a,b)=>(parseInt(b.cantidad)||0)-(parseInt(a.cantidad)||0));
-  else rows.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
-  return rows;
-}
-
-function renderTable() {
-  const rows = getFiltered();
-  const tbody = document.getElementById('tbody');
-  if (!tbody) return;
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="7"><div class="empty"><i class="ti ti-package-off"></i>Sin productos</div></td></tr>';
-    document.getElementById('row-count').textContent = '';
-    return;
-  }
-  tbody.innerHTML = rows.map((p, i) => {
-    const st = getStatus(p);
-    const badgeCls = st === 'ok' ? 'ok' : st === 'low' ? 'low' : 'out';
-    const badgeTxt = st === 'ok' ? 'En stock' : st === 'low' ? 'Stock bajo' : 'Sin stock';
-    const colorDot = p.color ? `<span class="color-dot" style="background:${p.color}"></span>` : '';
-    const modTags = getModels(p).slice(0,2).map(m=>`<span class="cat-badge" style="background:var(--blue-light);color:var(--blue)">${m}</span>`).join(' ');
-    const catBg = catColor(p.categoria);
-    const price = p.precio_venta ? formatPrice(p.precio_venta) : '—';
-    const realIndex = data.indexOf(p);
-    return `<tr onclick="openDetail(${realIndex})" style="cursor:pointer">
-      <td><div class="prod-name-cell">${colorDot}<span>${escHtml(p.nombre||'')}</span></div></td>
-      <td><span class="cat-badge" style="background:${catBg.bg};color:${catBg.text}">${escHtml(p.categoria||'')}</span></td>
-      <td>${modTags || '<span style="color:var(--text3)">—</span>'}</td>
-      <td>
-        <div class="qty-ctrl">
-          <button class="qty-btn" onclick="event.stopPropagation();changeQty(${realIndex},-1)">−</button>
-          <span class="qty-num">${parseInt(p.cantidad)||0}</span>
-          <button class="qty-btn" onclick="event.stopPropagation();changeQty(${realIndex},1)">+</button>
-        </div>
-      </td>
-      <td style="font-weight:600;color:var(--green)">${price}</td>
-      <td><span class="badge ${badgeCls}">${badgeTxt}</span></td>
-      <td><button class="btn sm" onclick="event.stopPropagation();openEditForm(${realIndex})" title="Editar"><i class="ti ti-edit"></i></button></td>
-    </tr>`;
-  }).join('');
-  document.getElementById('row-count').textContent = rows.length + ' de ' + data.length + ' productos';
-}
-
-// ─── CARD RENDER (Mobile) ─────────────────────────────────────────────────
-function renderCards() {
-  const q = (document.getElementById('search-mob')?.value || '').toLowerCase();
-  const statusF = document.getElementById('f-status-mob')?.value || '';
-  let rows = [...data];
-  if (currentPage === 'alerts') rows = rows.filter(p=>getStatus(p)!=='ok');
-  if (currentFilter) rows = rows.filter(p=>p.categoria===currentFilter);
-  if (currentModel) rows = rows.filter(p=>getModels(p).includes(currentModel));
-  if (q) rows = rows.filter(p=>(p.nombre||'').toLowerCase().includes(q)||(p.categoria||'').toLowerCase().includes(q)||(p.modelos||'').toLowerCase().includes(q));
-  if (statusF) rows = rows.filter(p=>getStatus(p)===statusF);
-  rows.sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||''));
-
-  const grid = document.getElementById('card-grid');
-  if (!grid) return;
-  if (!rows.length) {
-    grid.innerHTML = '<div class="empty" style="width:100%"><i class="ti ti-package-off"></i>Sin productos</div>';
-    document.getElementById('card-count').textContent = '';
-    return;
-  }
-  grid.innerHTML = rows.map(p => {
-    const st = getStatus(p);
-    const qty = parseInt(p.cantidad)||0;
-    const price = p.precio_venta ? formatPrice(p.precio_venta) : '—';
-    const dotColor = p.color || '#888780';
-    const statusTxt = st==='ok'?'<span style="color:var(--green)">● En stock ('+qty+')</span>':st==='low'?'<span style="color:var(--amber)">● Stock bajo ('+qty+')</span>':'<span style="color:var(--red)">● Sin stock</span>';
-    const realIndex = data.indexOf(p);
-    return `<div class="prod-card" onclick="openDetail(${realIndex})">
-      <div class="prod-card-top">
-        <div class="prod-card-dot" style="background:${dotColor}"></div>
-        <div class="prod-card-info">
-          <div class="prod-card-name">${escHtml(p.nombre||'')}</div>
-          <div class="prod-card-cat">${escHtml(p.categoria||'')}${p.modelos?' · '+p.modelos:''}</div>
-        </div>
-      </div>
-      <div class="prod-card-bottom">
-        <div class="prod-card-price">${price}</div>
-        <div style="font-size:11px">${statusTxt}</div>
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('card-count').textContent = rows.length + ' productos';
-}
-
-// ─── DETAIL MODAL ──────────────────────────────────────────────────────────
-function openDetail(idx) {
-  const p = data[idx];
-  if (!p) return;
-  detailProduct = {p, idx};
-
-  const dotColor = p.color || '#888780';
-  document.getElementById('d-color').style.background = dotColor;
-  document.getElementById('d-name').textContent = p.nombre || '—';
-  document.getElementById('d-cat').textContent = [p.categoria, p.subcat].filter(Boolean).join(' · ') || '—';
-  document.getElementById('d-price').textContent = p.precio_venta ? formatPrice(p.precio_venta) : '—';
-  document.getElementById('d-cost').textContent = p.costo ? formatPrice(p.costo) : '—';
-  document.getElementById('d-comp').textContent = p.competencia ? formatPrice(p.competencia) : '—';
-  document.getElementById('d-qty').textContent = parseInt(p.cantidad)||0;
-  document.getElementById('d-min').textContent = parseInt(p.stock_min)||0;
-  document.getElementById('d-subcat').textContent = p.subcat || '—';
-  document.getElementById('d-qty-ctrl').textContent = parseInt(p.cantidad)||0;
-
-  const st = getStatus(p);
-  const statusEl = document.getElementById('d-status');
-  statusEl.innerHTML = st==='ok'?'<span class="badge ok">En stock</span>':st==='low'?'<span class="badge low">Stock bajo</span>':'<span class="badge out">Sin stock</span>';
-
-  const tags = document.getElementById('d-tags');
-  const models = getModels(p);
-  tags.innerHTML = models.map(m=>`<span class="modal-tag model">${m}</span>`).join('') +
-    (p.categoria ? `<span class="modal-tag">${escHtml(p.categoria)}</span>` : '');
-
-  const notesSection = document.getElementById('d-notes-section');
-  if (p.notas) {
-    notesSection.style.display = '';
-    document.getElementById('d-notes').textContent = p.notas;
-  } else {
-    notesSection.style.display = 'none';
-  }
-
-  document.getElementById('detail-overlay').classList.add('open');
-}
-
-function closeDetail() {
-  document.getElementById('detail-overlay').classList.remove('open');
-  detailProduct = null;
-}
-
-function handleDetailOverlayClick(e) {
-  if (e.target === document.getElementById('detail-overlay')) closeDetail();
-}
-
-function editCurrentProduct() {
-  if (!detailProduct) return;
-  closeDetail();
-  openEditForm(detailProduct.idx);
-}
-
-function changeDetailQty(delta) {
-  if (!detailProduct) return;
-  changeQty(detailProduct.idx, delta);
-  const p = data[detailProduct.idx];
-  document.getElementById('d-qty').textContent = parseInt(p.cantidad)||0;
-  document.getElementById('d-qty-ctrl').textContent = parseInt(p.cantidad)||0;
-  const st = getStatus(p);
-  const statusEl = document.getElementById('d-status');
-  statusEl.innerHTML = st==='ok'?'<span class="badge ok">En stock</span>':st==='low'?'<span class="badge low">Stock bajo</span>':'<span class="badge out">Sin stock</span>';
-}
-
-// ─── ADD / EDIT FORM ───────────────────────────────────────────────────────
-function openAddForm() {
-  editingRowIndex = null;
-  document.getElementById('form-title').innerHTML = '<i class="ti ti-plus"></i>Agregar producto';
-  document.getElementById('delete-btn').style.display = 'none';
-  clearForm();
-  document.getElementById('form-overlay').classList.add('open');
-}
-
-function openEditForm(idx) {
-  editingRowIndex = idx;
-  const p = data[idx];
-  document.getElementById('form-title').innerHTML = '<i class="ti ti-edit"></i>Editar producto';
-  document.getElementById('delete-btn').style.display = '';
-
-  document.getElementById('f-name').value = p.nombre || '';
-  document.getElementById('f-cat').value = p.categoria || CATS[0];
-  document.getElementById('f-qty').value = parseInt(p.cantidad)||0;
-  document.getElementById('f-min').value = parseInt(p.stock_min)||0;
-  document.getElementById('f-models').value = p.modelos || '';
-  document.getElementById('f-subcat').value = p.subcat || '';
-  document.getElementById('f-cost').value = p.costo || '';
-  document.getElementById('f-price').value = p.precio_venta || '';
-  document.getElementById('f-comp').value = p.competencia || '';
-  document.getElementById('f-notes').value = p.notas || '';
-
-  selectedColor = p.color || COLORS[0].hex;
-  document.querySelectorAll('.color-swatch').forEach(s => {
-    s.classList.toggle('selected', s.style.background === selectedColor || rgbToHex(s.style.background) === selectedColor);
-  });
-
-  document.getElementById('form-overlay').classList.add('open');
-}
-
-function closeForm() {
-  document.getElementById('form-overlay').classList.remove('open');
-  editingRowIndex = null;
-}
-
-function handleOverlayClick(e) {
-  if (e.target === document.getElementById('form-overlay')) closeForm();
-}
-
-function clearForm() {
-  ['f-name','f-qty','f-min','f-models','f-subcat','f-cost','f-price','f-comp','f-notes'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-  document.getElementById('f-cat').value = CATS[0];
-  selectedColor = COLORS[0].hex;
-  document.querySelectorAll('.color-swatch').forEach((s,i) => s.classList.toggle('selected', i===0));
-}
-
-// ─── SAVE / DELETE ─────────────────────────────────────────────────────────
-async function saveProduct() {
-  const nombre = document.getElementById('f-name').value.trim();
-  if (!nombre) { showToast('Ingresa el nombre del producto', 'err'); return; }
-
-  const product = {
-    nombre,
-    categoria: document.getElementById('f-cat').value,
-    cantidad: parseInt(document.getElementById('f-qty').value)||0,
-    stock_min: parseInt(document.getElementById('f-min').value)||2,
-    modelos: document.getElementById('f-models').value.trim(),
-    subcat: document.getElementById('f-subcat').value.trim(),
-    costo: document.getElementById('f-cost').value.trim(),
-    precio_venta: document.getElementById('f-price').value.trim(),
-    competencia: document.getElementById('f-comp').value.trim(),
-    notas: document.getElementById('f-notes').value.trim(),
-    color: selectedColor
-  };
-
-  if (editingRowIndex !== null) {
-    product.rowIndex = data[editingRowIndex].__rowIndex;
-    product.action = 'update';
-  } else {
-    product.action = 'add';
-  }
-
-  try {
-    showToast('Guardando...', '');
-    const res = await fetch(SCRIPT_URL, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(product)
-    });
-    const json = await res.json();
-    if (json.success) {
-      closeForm();
-      showToast(editingRowIndex !== null ? 'Producto actualizado' : 'Producto agregado', 'ok');
-      await loadData();
-    } else {
-      showToast('Error: ' + (json.error||'desconocido'), 'err');
-    }
-  } catch(e) {
-    showToast('Error de conexión', 'err');
-  }
-}
-
-async function deleteCurrentProduct() {
-  if (editingRowIndex === null) return;
-  if (!confirm('¿Eliminar este producto? Esta acción no se puede deshacer.')) return;
-  const p = data[editingRowIndex];
-  try {
-    const res = await fetch(SCRIPT_URL, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'delete', rowIndex: p.__rowIndex})
-    });
-    const json = await res.json();
-    if (json.success) {
-      closeForm();
-      showToast('Producto eliminado', 'ok');
-      await loadData();
-    } else {
-      showToast('Error: ' + (json.error||'desconocido'), 'err');
-    }
-  } catch(e) {
-    showToast('Error de conexión', 'err');
-  }
-}
-
-async function changeQty(idx, delta) {
-  const p = data[idx];
-  const newQty = Math.max(0, (parseInt(p.cantidad)||0) + delta);
-  data[idx].cantidad = newQty;
-  updateStats();
-  updateNavCounts();
-  renderTable();
-  renderCards();
-  try {
-    await fetch(SCRIPT_URL, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({action:'updateQty', rowIndex: p.__rowIndex, cantidad: newQty})
-    });
-  } catch(e) {}
-}
-
-// ─── MOBILE CATS ──────────────────────────────────────────────────────────
-function showMobileCats() {
-  document.getElementById('cats-drawer').classList.add('open');
-}
-function closeMobileCats() {
-  document.getElementById('cats-drawer').classList.remove('open');
-}
-
-// ─── HELPERS ───────────────────────────────────────────────────────────────
-function catColor(cat) {
-  const map = {
-    'Pantallas':{bg:'#E6F1FB',text:'#0C447C'},'Batería':{bg:'#FAEEDA',text:'#633806'},
-    'Placa':{bg:'#FCEBEB',text:'#791F1F'},'Trackpad':{bg:'#E1F5EE',text:'#085041'},
-    'Top Case':{bg:'#EEEDFE',text:'#3C3489'},'Touch Bar':{bg:'#FBEAF0',text:'#72243E'},
-    'Discos SSD/NVMe':{bg:'#EAF3DE',text:'#27500A'},'Memoria RAM':{bg:'#FAECE7',text:'#712B13'},
-  };
-  return map[cat] || {bg:'var(--bg2)',text:'var(--text2)'};
-}
-
-function formatPrice(v) {
-  if (!v) return '—';
-  const n = parseFloat(String(v).replace(/[^0-9.]/g,''));
-  if (isNaN(n)) return v;
-  return '$' + n.toLocaleString('es-CL');
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-function rgbToHex(rgb) {
-  const m = rgb.match(/\d+/g);
-  if (!m) return rgb;
-  return '#' + m.slice(0,3).map(x=>parseInt(x).toString(16).padStart(2,'0')).join('');
-}
-
-let toastTimer;
-function showToast(msg, type) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show' + (type ? ' ' + type : '');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
-}
-</script>
+<script src="app.js"></script>
 </body>
 </html>
