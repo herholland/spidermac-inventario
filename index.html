@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1D9E75">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SpiderMac">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<title>SpiderMac Inventario</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#efefec;
+  --text:#1a1a18;--text2:#6b6b67;--text3:#a0a09a;
+  --border:rgba(0,0,0,0.10);--border2:rgba(0,0,0,0.20);
+  --radius:8px;--radius-lg:12px;
+  --green:#1D9E75;--green-light:#E1F5EE;--green-dark:#0F6E56;
+  --amber:#BA7517;--amber-light:#FAEEDA;
+  --red:#A32D2D;--red-light:#FCEBEB;
+  --sidebar:220px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1e1e1c;--bg2:#2a2a28;--bg3:#1a1a18;
+    --text:#f0efe8;--text2:#a0a09a;--text3:#6b6b67;
+    --border:rgba(255,255,255,0.09);--border2:rgba(255,255,255,0.18);
+    --green-light:#04342C;--amber-light:#412402;--red-light:#501313;
+  }
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,sans-serif;background:var(--bg3);color:var(--text)}
+
+/* LAYOUT */
+.layout{display:flex;height:100vh;height:100dvh}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);background:var(--bg);border-right:0.5px solid var(--border2);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden}
+.sidebar-logo{padding:1rem;border-bottom:0.5px solid var(--border);flex-shrink:0}
+.sidebar-logo h2{font-size:15px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px}
+.sidebar-logo h2 i{color:var(--green);font-size:18px}
+.sidebar-logo p{font-size:11px;color:var(--text3);margin-top:2px}
+.sidebar-scroll{flex:1;overflow-y:auto;padding-bottom:1rem}
+.nav-section{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;padding:10px 1rem 3px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 1rem;font-size:13px;color:var(--text2);cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .1s,color .1s}
+.nav-item:hover{background:var(--bg2);color:var(--text)}
+.nav-item.active{background:var(--green-light);color:var(--green-dark);font-weight:500}
+.nav-item i{font-size:15px;flex-shrink:0;width:18px}
+.nav-count{margin-left:auto;font-size:11px;background:var(--bg2);padding:1px 7px;border-radius:20px;color:var(--text3);min-width:22px;text-align:center}
+.nav-item.active .nav-count{background:rgba(29,158,117,.18);color:var(--green)}
+
+/* SYNC STATUS */
+.sync-bar{padding:8px 1rem;border-top:0.5px solid var(--border);font-size:11px;color:var(--text3);display:flex;align-items:center;gap:6px;flex-shrink:0}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
+.sync-dot.ok{background:var(--green)}
+.sync-dot.syncing{background:var(--amber);animation:pulse 1s infinite}
+.sync-dot.err{background:var(--red)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{padding:.85rem 1.25rem;display:flex;align-items:center;justify-content:space-between;background:var(--bg);border-bottom:0.5px solid var(--border);flex-shrink:0}
+.topbar h1{font-size:17px;font-weight:500;color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.content{flex:1;overflow-y:auto;padding:1.25rem}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+.stat{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius);padding:10px 12px}
+.stat-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.stat-value{font-size:22px;font-weight:500;color:var(--text)}
+.stat-value.g{color:var(--green)}.stat-value.a{color:var(--amber)}.stat-value.r{color:var(--red)}
+
+/* PANEL */
+.panel{background:var(--bg);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem}
+.panel-title{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:1rem;text-transform:uppercase;letter-spacing:.06em;display:flex;align-items:center;gap:6px}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+.form-grid2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem}
+.fgroup{display:flex;flex-direction:column;gap:4px}
+.fgroup label{font-size:10px;color:var(--text2);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.fgroup input,.fgroup select{width:100%;padding:7px 9px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;transition:border-color .15s;font-family:inherit}
+.fgroup input:focus,.fgroup select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(29,158,117,.12)}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{padding:7px 14px;border-radius:var(--radius);border:0.5px solid var(--border2);font-size:13px;font-weight:500;cursor:pointer;background:var(--bg);color:var(--text);display:inline-flex;align-items:center;gap:6px;transition:background .1s,transform .1s;font-family:inherit;white-space:nowrap}
+.btn:hover{background:var(--bg2)}
+.btn:active{transform:scale(0.97)}
+.btn.primary{background:var(--green);color:#fff;border-color:var(--green-dark)}
+.btn.primary:hover{background:var(--green-dark)}
+.btn.danger{background:var(--red-light);color:var(--red);border-color:rgba(163,45,45,.25)}
+.btn.sm{padding:4px 8px;font-size:12px}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:8px;margin-bottom:.85rem;flex-wrap:wrap}
+.toolbar input{flex:1;min-width:140px;padding:7px 10px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit}
+.toolbar input:focus{border-color:var(--green)}
+.toolbar select{padding:7px 9px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;cursor:pointer}
+
+/* TABLE */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{text-align:left;font-weight:600;font-size:10px;color:var(--text2);padding:7px 8px;border-bottom:0.5px solid var(--border2);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;background:var(--bg)}
+td{padding:8px 8px;border-bottom:0.5px solid var(--border);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg2)}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
+.badge.ok{background:var(--green-light);color:var(--green-dark)}
+.badge.low{background:var(--amber-light);color:var(--amber)}
+.badge.out{background:var(--red-light);color:var(--red)}
+.cat-badge{display:inline-block;padding:2px 7px;border-radius:5px;font-size:10px;font-weight:600;white-space:nowrap}
+.qty-ctrl{display:flex;align-items:center;gap:5px}
+.qty-btn{width:24px;height:24px;border-radius:6px;border:0.5px solid var(--border2);background:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);transition:background .1s;font-family:inherit;font-size:14px}
+.qty-btn:hover{background:var(--bg2)}
+.qty-num{min-width:28px;text-align:center;font-weight:600;font-size:13px}
+.empty{text-align:center;padding:3rem;color:var(--text3);font-size:14px}
+.empty i{font-size:36px;display:block;margin-bottom:10px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1a1a18;color:#f0efe8;padding:10px 18px;border-radius:var(--radius);font-size:13px;font-weight:500;transition:transform .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 24px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--red)}
+.toast.ok{background:var(--green)}
+
+/* MOBILE */
+.mobile-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg);border-top:0.5px solid var(--border2);padding:.5rem;padding-bottom:calc(.5rem + env(safe-area-inset-bottom));z-index:100}
+.mobile-bar-inner{display:flex;justify-content:space-around}
+.mob-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 8px;border:none;background:none;cursor:pointer;color:var(--text3);font-size:10px;font-family:inherit;border-radius:8px;min-width:52px}
+.mob-btn.active{color:var(--green)}
+.mob-btn i{font-size:20px}
+
+/* LOADING OVERLAY */
+.loading{position:fixed;inset:0;background:var(--bg3);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;z-index:9999;transition:opacity .4s}
+.loading.hidden{opacity:0;pointer-events:none}
+.spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--green);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:680px){
+  .sidebar{display:none}
+  .stats{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr 1fr}
+  .form-grid2{grid-template-columns:1fr 1fr}
+  .mobile-bar{display:block}
+  .content{padding:1rem 1rem calc(70px + env(safe-area-inset-bottom))}
+  .topbar{padding:.75rem 1rem}
+}
+@media(max-width:400px){
+  .stats{grid-template-columns:1fr 1fr}
+  .form-grid{grid-template-columns:1fr}
+  .form-grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <span style="font-size:13px;color:var(--text2)">Cargando inventario...</span>
+</div>
+
+<div class="layout">
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <h2><i class="ti ti-device-laptop"></i>SpiderMac</h2>
+    <p>Inventario de Repuestos</p>
+  </div>
+  <div class="sidebar-scroll">
+    <div class="nav-section">Vistas</div>
+    <button class="nav-item active" onclick="showPage('all')" id="nav-all"><i class="ti ti-layout-list"></i>Todo<span class="nav-count" id="nc-all">—</span></button>
+    <button class="nav-item" onclick="showPage('alerts')" id="nav-alerts"><i class="ti ti-alert-triangle"></i>Alertas<span class="nav-count" id="nc-alerts">—</span></button>
+    <div class="nav-section">Categorías</div>
+    <button class="nav-item" onclick="filterCat('Pantallas')" id="nav-Pantallas"><i class="ti ti-device-laptop"></i>Pantallas<span class="nav-count" id="nc-Pantallas">—</span></button>
+    <button class="nav-item" onclick="filterCat('Bisel')" id="nav-Bisel"><i class="ti ti-border-outer"></i>Bisel<span class="nav-count" id="nc-Bisel">—</span></button>
+    <button class="nav-item" onclick="filterCat('Batería')" id="nav-Batería"><i class="ti ti-battery"></i>Batería<span class="nav-count" id="nc-Batería">—</span></button>
+    <button class="nav-item" onclick="filterCat('Placa')" id="nav-Placa"><i class="ti ti-circuit-board"></i>Placa<span class="nav-count" id="nc-Placa">—</span></button>
+    <button class="nav-item" onclick="filterCat('Top Case')" id="nav-Top Case"><i class="ti ti-keyboard"></i>Top Case<span class="nav-count" id="nc-Top Case">—</span></button>
+    <button class="nav-item" onclick="filterCat('Trackpad')" id="nav-Trackpad"><i class="ti ti-hand-finger"></i>Trackpad<span class="nav-count" id="nc-Trackpad">—</span></button>
+    <button class="nav-item" onclick="filterCat('Touch Bar')" id="nav-Touch Bar"><i class="ti ti-adjustments-horizontal"></i>Touch Bar<span class="nav-count" id="nc-Touch Bar">—</span></button>
+    <button class="nav-item" onclick="filterCat('PDC / Carga')" id="nav-PDC / Carga"><i class="ti ti-plug"></i>PDC / Carga<span class="nav-count" id="nc-PDC / Carga">—</span></button>
+    <button class="nav-item" onclick="filterCat('Flex')" id="nav-Flex"><i class="ti ti-wave-square"></i>Flex<span class="nav-count" id="nc-Flex">—</span></button>
+    <button class="nav-item" onclick="filterCat('Ventilador')" id="nav-Ventilador"><i class="ti ti-wind"></i>Ventilador<span class="nav-count" id="nc-Ventilador">—</span></button>
+    <button class="nav-item" onclick="filterCat('Audio')" id="nav-Audio"><i class="ti ti-volume"></i>Audio<span class="nav-count" id="nc-Audio">—</span></button>
+    <button class="nav-item" onclick="filterCat('Huella / Botones')" id="nav-Huella / Botones"><i class="ti ti-fingerprint"></i>Huella / Botones<span class="nav-count" id="nc-Huella / Botones">—</span></button>
+    <button class="nav-item" onclick="filterCat('Adaptadores Disco')" id="nav-Adaptadores Disco"><i class="ti ti-server"></i>Adaptadores Disco<span class="nav-count" id="nc-Adaptadores Disco">—</span></button>
+    <button class="nav-item" onclick="filterCat('Discos SSD/NVMe')" id="nav-Discos SSD/NVMe"><i class="ti ti-device-sd-card"></i>Discos SSD/NVMe<span class="nav-count" id="nc-Discos SSD/NVMe">—</span></button>
+    <button class="nav-item" onclick="filterCat('Memoria RAM')" id="nav-Memoria RAM"><i class="ti ti-cpu"></i>Memoria RAM<span class="nav-count" id="nc-Memoria RAM">—</span></button>
+    <button class="nav-item" onclick="filterCat('Wifi / BT')" id="nav-Wifi / BT"><i class="ti ti-wifi"></i>Wifi / BT<span class="nav-count" id="nc-Wifi / BT">—</span></button>
+    <button class="nav-item" onclick="filterCat('Accesorios')" id="nav-Accesorios"><i class="ti ti-plug-connected"></i>Accesorios<span class="nav-count" id="nc-Accesorios">—</span></button>
+    <button class="nav-item" onclick="filterCat('Tornillos / Gomas')" id="nav-Tornillos / Gomas"><i class="ti ti-tool"></i>Tornillos / Gomas<span class="nav-count" id="nc-Tornillos / Gomas">—</span></button>
+    <button class="nav-item" onclick="filterCat('Componentes SMD')" id="nav-Componentes SMD"><i class="ti ti-atom"></i>Componentes SMD<span class="nav-count" id="nc-Componentes SMD">—</span></button>
+    <button class="nav-item" onclick="filterCat('Consolas')" id="nav-Consolas"><i class="ti ti-device-gamepad-2"></i>Consolas<span class="nav-count" id="nc-Consolas">—</span></button>
+  </div>
+  <div class="sync-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span id="sync-text">Conectando...</span>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+  <div class="topbar">
+    <h1 id="page-title">Todo el inventario</h1>
+    <div class="topbar-right">
+      <button class="btn" onclick="loadData()" title="Sincronizar"><i class="ti ti-refresh"></i></button>
+      <button class="btn primary" onclick="toggleForm()"><i class="ti ti-plus"></i><span class="hide-sm">Agregar</span></button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Productos</div><div class="stat-value" id="s-total">—</div></div>
+      <div class="stat"><div class="stat-label">En stock</div><div class="stat-value g" id="s-ok">—</div></div>
+      <div class="stat"><div class="stat-label">Stock bajo</div><div class="stat-value a" id="s-low">—</div></div>
+      <div class="stat"><div class="stat-label">Sin stock</div><div class="stat-value r" id="s-out">—</div></div>
+    </div>
+
+    <!-- FORM -->
+    <div class="panel" id="add-form" style="display:none">
+      <div class="panel-title"><i class="ti ti-plus"></i>Agregar producto</div>
+      <div class="form-grid">
+        <div class="fgroup"><label>Nombre</label><input type="text" id="f-name" placeholder="Ej: TRACKPAD A2338 M1 GRAY"></div>
+        <div class="fgroup"><label>Categoría</label>
+          <select id="f-cat">
+            <option>Pantallas</option><option>Bisel</option><option>Batería</option>
+            <option>Placa</option><option>Top Case</option><option>Trackpad</option>
+            <option>Touch Bar</option><option>PDC / Carga</option><option>Flex</option>
+            <option>Ventilador</option><option>Audio</option><option>Huella / Botones</option>
+            <option>Adaptadores Disco</option><option>Discos SSD/NVMe</option><option>Memoria RAM</option>
+            <option>Wifi / BT</option><option>Accesorios</option><option>Tornillos / Gomas</option>
+            <option>Componentes SMD</option><option>Consolas</option>
+          </select>
+        </div>
+        <div class="fgroup"><label>Cantidad</label><input type="number" id="f-qty" placeholder="0" min="0"></div>
+        <div class="fgroup"><label>Stock mín.</label><input type="number" id="f-min" placeholder="2" min="0"></div>
+      </div>
+      <div class="form-grid2">
+        <div class="fgroup"><label>Costo unitario</label><input type="text" id="f-cost" placeholder="$0"></div>
+        <div class="fgroup"><label>Precio publicado</label><input type="text" id="f-price" placeholder="$0"></div>
+        <div class="fgroup"><label>Competencia</label><input type="text" id="f-comp" placeholder="$0"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn primary" onclick="addProduct()"><i class="ti ti-check"></i>Guardar en Sheet</button>
+        <button class="btn" onclick="toggleForm()"><i class="ti ti-x"></i>Cancelar</button>
+      </div>
+    </div>
+
+    <!-- TABLE PANEL -->
+    <div class="panel">
+      <div class="toolbar">
+        <input type="text" id="search" placeholder="Buscar..." oninput="renderTable()">
+        <select id="f-status" onchange="renderTable()">
+          <option value="">Todo el stock</option>
+          <option value="ok">En stock</option>
+          <option value="low">Stock bajo</option>
+          <option value="out">Sin stock</option>
+        </select>
+        <select id="f-sort" onchange="renderTable()">
+          <option value="nombre">Nombre A-Z</option>
+          <option value="qty-asc">Menor cantidad</option>
+          <option value="qty-desc">Mayor cantidad</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th style="width:35%">Producto</th>
+              <th style="width:14%">Categoría</th>
+              <th style="width:17%">Cantidad</th>
+              <th style="width:11%">Costo</th>
+              <th style="width:11%">Precio</th>
+              <th style="width:9%">Estado</th>
+              <th style="width:3%"></th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:right" id="row-count"></div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- MOBILE BOTTOM BAR -->
+<div class="mobile-bar">
+  <div class="mobile-bar-inner">
+    <button class="mob-btn active" id="mob-all" onclick="showPage('all')"><i class="ti ti-layout-list"></i>Todo</button>
+    <button class="mob-btn" id="mob-alerts" onclick="showPage('alerts')"><i class="ti ti-alert-triangle"></i>Alertas</button>
+    <button class="mob-btn" onclick="toggleForm()"><i class="ti ti-plus"></i>Agregar</button>
+    <button class="mob-btn" onclick="showMobileCats()"><i class="ti ti-category"></i>Categorías</button>
+    <button class="mob-btn" onclick="loadData()"><i class="ti ti-refresh"></i>Sync</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
