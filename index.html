@@ -197,12 +197,14 @@ tr{cursor:pointer}
 /* ─── RESPONSIVE ──────────────────────────────────── */
 @media(max-width:680px){
   .sidebar{display:none}
-  .stats{grid-template-columns:1fr 1fr}
   .form-grid-3{grid-template-columns:1fr 1fr}
   .form-grid-4{grid-template-columns:1fr 1fr}
   .mobile-bar{display:block}
-  .content{padding:.85rem .85rem calc(72px + var(--sb))}
+  .content{padding:.6rem .6rem calc(72px + var(--sb))}
   .topbar{padding:.72rem 1rem;padding-top:calc(.72rem + var(--st))}
+  /* panel fills remaining height */
+  .panel{margin-bottom:0;display:flex;flex-direction:column}
+  #tbody{flex:1}
 }
 @media(max-width:400px){
   .form-grid-2{grid-template-columns:1fr}
@@ -302,40 +304,29 @@ tr{cursor:pointer}
       </div>
     </div>
     <div class="content">
-      <div class="stats">
-        <div class="stat"><div class="stat-label">Productos</div><div class="stat-value" id="s-total">—</div></div>
-        <div class="stat"><div class="stat-label">En stock</div><div class="stat-value g" id="s-ok">—</div></div>
-        <div class="stat"><div class="stat-label">Stock bajo</div><div class="stat-value a" id="s-low">—</div></div>
-        <div class="stat"><div class="stat-label">Sin stock</div><div class="stat-value r" id="s-out">—</div></div>
-      </div>
-      <div class="panel">
-        <div class="toolbar">
-          <input type="text" id="search" placeholder="Buscar producto, modelo..." oninput="renderTable()" autocomplete="off">
-          <select id="f-status" onchange="renderTable()">
-            <option value="">Todo el stock</option>
+      <div class="panel" style="padding:0;overflow:hidden">
+        <!-- Toolbar pegado arriba -->
+        <div style="padding:.75rem .85rem .6rem;display:flex;gap:7px;flex-wrap:wrap;border-bottom:0.5px solid var(--border)">
+          <div style="position:relative;flex:1;min-width:120px">
+            <i class="ti ti-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--text3);pointer-events:none"></i>
+            <input type="text" id="search" placeholder="Buscar producto, modelo..." oninput="renderTable()" autocomplete="off"
+              style="width:100%;padding:8px 10px 8px 32px;font-size:13px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;-webkit-appearance:none">
+          </div>
+          <select id="f-status" onchange="renderTable()" style="padding:8px 26px 8px 10px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;cursor:pointer;-webkit-appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%276%27%3E%3Cpath d=%27M0 0l5 6 5-6z%27 fill=%27%23888%27/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 8px center">
+            <option value="">Todo</option>
             <option value="ok">En stock</option>
             <option value="low">Stock bajo</option>
             <option value="out">Sin stock</option>
           </select>
-          <select id="f-sort" onchange="renderTable()">
+          <select id="f-sort" onchange="renderTable()" style="padding:8px 26px 8px 10px;font-size:12px;border-radius:var(--radius);border:0.5px solid var(--border2);background:var(--bg2);color:var(--text);outline:none;font-family:inherit;cursor:pointer;-webkit-appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2710%27 height=%276%27%3E%3Cpath d=%27M0 0l5 6 5-6z%27 fill=%27%23888%27/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 8px center">
             <option value="nombre">A-Z</option>
             <option value="qty-asc">Menor stock</option>
             <option value="qty-desc">Mayor stock</option>
           </select>
         </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th style="width:42%">Producto</th>
-              <th style="width:13%">Precio</th>
-              <th style="width:18%">Cantidad</th>
-              <th style="width:11%">Estado</th>
-              <th style="width:8%"></th>
-            </tr></thead>
-            <tbody id="tbody"></tbody>
-          </table>
-        </div>
-        <div style="font-size:11px;color:var(--text3);margin-top:8px;text-align:right" id="row-count"></div>
+        <!-- Lista de tarjetas -->
+        <div id="tbody" style="overflow-y:auto;-webkit-overflow-scrolling:touch"></div>
+        <div style="font-size:11px;color:var(--text3);padding:.5rem .85rem;text-align:right;border-top:0.5px solid var(--border)" id="row-count"></div>
       </div>
     </div>
   </main>

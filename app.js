@@ -481,47 +481,74 @@ function renderAll() { renderTable(); updateNavCounts(); }
 function renderTable() {
   const data  = getVisible();
   const tbody = document.getElementById("tbody");
+
   if (!data.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty"><i class="ti ti-package-off"></i>No hay productos que coincidan</div></td></tr>`;
+    tbody.innerHTML = `<div class="empty"><i class="ti ti-package-off"></i>No hay productos que coincidan</div>`;
   } else {
-    tbody.innerHTML = data.map(p => {
-      const s  = getStatus(p);
-      const cc = CAT_COLORS[p.categoria] || { bg:"#F1EFE8", color:"#444441" };
-      const modTags = (p.modelos||"").split(",").map(s=>s.trim()).filter(Boolean).slice(0,3);
-      const colorDot = p.color ? `<span style="font-size:10px;color:var(--text3);margin-left:4px">${esc(p.color)}</span>` : "";
-      return `<tr style="cursor:pointer" onclick="openDetailModal('${p.id}')">
-        <td style="min-width:140px">
-          <div style="font-weight:600;font-size:12px;line-height:1.3;margin-bottom:3px">${esc(p.nombre)}</div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center">
+    tbody.innerHTML = data.map((p, i) => {
+      const s   = getStatus(p);
+      const cc  = CAT_COLORS[p.categoria] || { bg:"#F1EFE8", color:"#444441" };
+      const modTags = (p.modelos||"").split(",").map(x=>x.trim()).filter(Boolean).slice(0,3);
+      const qtyColor = s==="ok" ? "var(--text)" : s==="low" ? "var(--amber)" : "var(--red)";
+      const isLast = i === data.length - 1;
+
+      // Initial letter avatar
+      const initial = (p.nombre||"?")[0].toUpperCase();
+
+      return `
+      <div onclick="openDetailModal('${p.id}')"
+        style="display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;border-bottom:${isLast?"none":"0.5px solid var(--border)"};background:var(--bg);transition:background .1s"
+        onmouseenter="this.style.background='var(--bg2)'" onmouseleave="this.style.background='var(--bg)'"
+        ontouchstart="this.style.background='var(--bg2)'" ontouchend="this.style.background='var(--bg)'">
+
+        <!-- Avatar -->
+        <div style="width:40px;height:40px;border-radius:10px;background:${cc.bg};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:16px;font-weight:700;color:${cc.color}">${initial}</div>
+
+        <!-- Info -->
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:var(--text);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px">${esc(p.nombre)}</div>
+          <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
             <span class="cat-badge" style="background:${cc.bg};color:${cc.color}">${esc(p.categoria)}</span>
-            ${modTags.map(m=>`<span class="model-tag">${esc(m)}</span>`).join("")}
-            ${colorDot}
+            ${p.precio ? `<span style="font-size:11px;color:var(--text2)">$/u: ${esc(p.precio)}</span>` : ""}
           </div>
-        </td>
-        <td style="font-size:13px;font-weight:600;color:var(--green);white-space:nowrap">${esc(p.precio||"—")}</td>
-        <td>
-          <div class="qty-ctrl" onclick="event.stopPropagation()">
-            <button class="qty-btn" onclick="changeQty('${p.id}',-1)"><i class="ti ti-minus" style="font-size:11px"></i></button>
-            <span class="qty-num" style="color:${s==='ok'?'var(--text)':s==='low'?'var(--amber)':'var(--red)'}">${p.cantidad}</span>
-            <button class="qty-btn" onclick="changeQty('${p.id}',1)"><i class="ti ti-plus" style="font-size:11px"></i></button>
+        </div>
+
+        <!-- Cantidad + estado -->
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0" onclick="event.stopPropagation()">
+          <div style="text-align:center">
+            <div style="font-size:20px;font-weight:700;color:${qtyColor};line-height:1">${p.cantidad}</div>
+            <div style="font-size:10px;color:var(--text3);margin-top:1px">${s==="ok"?"En stock":s==="low"?"Stock bajo":"Sin stock"}</div>
           </div>
-        </td>
-        <td>${statusBadge(p)}</td>
-        <td onclick="event.stopPropagation()">
-          <div class="action-btns">
-            <button class="btn sm" onclick="openEditModal('${p.id}')" title="Editar"><i class="ti ti-pencil"></i></button>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <button class="qty-btn" onclick="changeQty('${p.id}',1)" style="width:30px;height:30px;border-radius:50%;border:none;background:var(--gl);color:var(--gd);cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none">
+              <i class="ti ti-plus" style="font-size:14px"></i>
+            </button>
+            <button class="qty-btn" onclick="changeQty('${p.id}',-1)" style="width:30px;height:30px;border-radius:50%;border:none;background:var(--rl);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none">
+              <i class="ti ti-minus" style="font-size:14px"></i>
+            </button>
           </div>
-        </td>
-      </tr>`;
+          <!-- Edit + delete -->
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <button onclick="openEditModal('${p.id}')" style="width:30px;height:30px;border-radius:8px;border:0.5px solid var(--border2);background:var(--bg2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none">
+              <i class="ti ti-pencil" style="font-size:14px"></i>
+            </button>
+            <button onclick="if(confirm('¿Eliminar?')){deleteProduct('${p.id}')}" style="width:30px;height:30px;border-radius:8px;border:0.5px solid rgba(163,45,45,.25);background:var(--rl);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none">
+              <i class="ti ti-trash" style="font-size:14px"></i>
+            </button>
+          </div>
+        </div>
+      </div>`;
     }).join("");
   }
 
-  const allData = getVisible();
-  document.getElementById("s-total").textContent = allData.length;
-  document.getElementById("s-ok").textContent    = allData.filter(p => getStatus(p) === "ok").length;
-  document.getElementById("s-low").textContent   = allData.filter(p => getStatus(p) === "low").length;
-  document.getElementById("s-out").textContent   = allData.filter(p => getStatus(p) === "out").length;
   document.getElementById("row-count").textContent = `${data.length} producto${data.length!==1?"s":""}`;
+}
+
+function deleteProduct(id) {
+  products = products.filter(x => String(x.id) !== String(id));
+  renderAll();
+  saveAll();
+  toast("Producto eliminado");
 }
 
 function updateNavCounts() {
