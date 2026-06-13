@@ -303,7 +303,7 @@ function openDetailModal(id) {
       </div>
       <div class="detail-card">
         <div class="detail-card-label">Precio venta</div>
-        <div class="detail-card-value">${esc(p.precio||"—")}</div>
+        <div class="detail-card-value">${clp(p.precio)}</div>
       </div>
       <div class="detail-card">
         <div class="detail-card-label">Estado</div>
@@ -315,15 +315,15 @@ function openDetailModal(id) {
       <div class="detail-label" style="margin-bottom:10px">Información de costos</div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border)">
         <span style="font-size:13px;color:var(--text2)">Costo de compra</span>
-        <span style="font-size:13px;font-weight:500;color:var(--text)">${esc(p.costo||"—")}</span>
+        <span style="font-size:13px;font-weight:500;color:var(--text)">${clp(p.costo)}</span>
       </div>
       <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border)">
         <span style="font-size:13px;color:var(--text2)">Precio de venta</span>
-        <span style="font-size:13px;font-weight:600;color:var(--green)">${esc(p.precio||"—")}</span>
+        <span style="font-size:13px;font-weight:600;color:var(--green)">${clp(p.precio)}</span>
       </div>
       <div style="display:flex;justify-content:space-between;padding:6px 0">
         <span style="font-size:13px;color:var(--text2)">Precio competencia</span>
-        <span style="font-size:13px;font-weight:500;color:var(--text)">${esc(p.competencia||"—")}</span>
+        <span style="font-size:13px;font-weight:500;color:var(--text)">${clp(p.competencia)}</span>
       </div>
     </div>
 
@@ -509,7 +509,7 @@ function renderTable() {
           <div style="font-size:13px;font-weight:600;color:var(--text);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:3px">${esc(p.nombre)}</div>
           <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
             <span class="cat-badge" style="background:${cc.bg};color:${cc.color}">${esc(p.categoria)}</span>
-            ${p.precio ? `<span style="font-size:11px;color:var(--text2)">$/u: ${esc(p.precio)}</span>` : ""}
+            ${p.precio ? `<span style="font-size:11px;color:var(--text2)">$/u: ${clp(p.precio)}</span>` : ""}
           </div>
         </div>
 
@@ -592,6 +592,14 @@ function setActiveNav(id) {
 }
 
 // ── HELPERS ────────────────────────────────────────
+// Formato peso chileno: "65000" → "$65.000"
+function clp(val) {
+  if (!val && val !== 0) return "—";
+  const num = parseInt(String(val).replace(/[^0-9]/g, ""), 10);
+  if (isNaN(num) || String(val).trim() === "") return "—";
+  return "$" + num.toLocaleString("es-CL");
+}
+
 function getStatus(p) {
   const q = Number(p.cantidad) || 0, m = Number(p.minimo) || 1;
   return q === 0 ? "out" : q <= m ? "low" : "ok";
